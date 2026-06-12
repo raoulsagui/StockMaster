@@ -1,0 +1,147 @@
+/* ============================================================
+   POINT D'ENTRÉE CSS DE L'APPLICATION STOCKMASTER
+   On importe les 3 couches de Tailwind CSS :
+   - base    : reset CSS + styles HTML de base
+   - components : classes réutilisables (.btn-primary, .card…)
+   - utilities  : toutes les classes utilitaires (bg-, text-, flex-, etc.)
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -------------------------------------------------------
+   COUCHE BASE
+   On surcharge les styles par défaut du navigateur
+   ------------------------------------------------------- */
+@layer base {
+  /* Import de la police Inter depuis Google Fonts */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  /* Appliqué à tous les éléments */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Style global du body */
+  body {
+    @apply bg-gray-100 text-gray-800 font-sans antialiased;
+  }
+}
+
+/* -------------------------------------------------------
+   COUCHE COMPONENTS
+   Classes CSS réutilisables dans tous nos composants Vue.
+   On les préfixe de façon claire pour qu'on sache
+   d'où elles viennent.
+   ------------------------------------------------------- */
+@layer components {
+
+  /* --- BOUTONS --- */
+
+  /* Bouton principal (actions importantes) */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg
+           hover:bg-blue-700 active:bg-blue-800
+           transition-colors duration-200 font-medium text-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Bouton secondaire (actions neutres) */
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-lg
+           border border-gray-300 hover:bg-gray-50 active:bg-gray-100
+           transition-colors duration-200 font-medium text-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Bouton danger (suppression, désactivation) */
+  .btn-danger {
+    @apply inline-flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg
+           hover:bg-red-700 active:bg-red-800
+           transition-colors duration-200 font-medium text-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Bouton succès (validation, confirmation) */
+  .btn-success {
+    @apply inline-flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg
+           hover:bg-green-700 active:bg-green-800
+           transition-colors duration-200 font-medium text-sm
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* --- CARTE / PANEL --- */
+
+  /* Conteneur blanc avec ombre légère — utilisé partout */
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  /* --- FORMULAIRES --- */
+
+  /* Champ de saisie standard */
+  .form-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+           transition-all duration-200
+           disabled:bg-gray-100 disabled:cursor-not-allowed;
+  }
+
+  /* Label de formulaire */
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  /* Message d'erreur de validation */
+  .form-error {
+    @apply text-xs text-red-600 mt-1;
+  }
+
+  /* --- BADGES DE RÔLES (Module 1 : Utilisateurs) --- */
+  /* Chaque rôle a sa propre couleur pour une lecture rapide */
+
+  .badge-ADMIN {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-purple-100 text-purple-800;
+  }
+
+  .badge-GESTIONNAIRE {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-blue-100 text-blue-800;
+  }
+
+  .badge-MAGASINIER {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-green-100 text-green-800;
+  }
+
+  .badge-AUDITEUR {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-yellow-100 text-yellow-800;
+  }
+
+  /* --- BADGES DE STATUT --- */
+
+  .badge-actif {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-green-100 text-green-800;
+  }
+
+  .badge-inactif {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+           bg-red-100 text-red-800;
+  }
+
+  /* --- TABLE --- */
+
+  /* En-tête de tableau */
+  .table-header {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+
+  /* Cellule de tableau */
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-700;
+  }
+}

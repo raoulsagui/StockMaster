@@ -1,11 +1,23 @@
-<script setup></script>
+<script setup>
+// ============================================================
+// APP.VUE — Composant racine de l'application
+//
+// Ce composant est le point d'entrée de toute l'UI Vue.
+// Il contient uniquement <RouterView /> qui est remplacé
+// dynamiquement par la vue correspondant à la route active.
+//
+// Pourquoi ne pas mettre le layout ici ?
+// Parce que certaines pages (login) n'utilisent PAS AppLayout.
+// Chaque vue décide elle-même si elle enveloppe son contenu
+// dans AppLayout ou non.
+//
+// Exemple :
+//   LoginView.vue        → rendu direct (pas de sidebar/header)
+//   TableauDeBordView    → enveloppé dans AppLayout
+// ============================================================
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <!-- RouterView : la vue active est injectée ici -->
+  <RouterView />
 </template>
-
-<style scoped></style>
