@@ -100,20 +100,46 @@ const router = createRouter({
       meta: { title: 'Modifier un utilisateur' },
     },
 
-    // --- MODULE 2 : Entrepôts (placeholder) ---
+    // --- MODULE 2 : Entrepôts ---
     {
       path: '/entrepots',
       name: 'entrepots',
       component: () => import('@/views/entrepots/EntrepotsView.vue'),
       meta: { title: 'Entrepôts' },
     },
+    {
+      path: '/entrepots/creer',
+      name: 'entrepots-creer',
+      component: () => import('@/views/entrepots/EntrepotFormView.vue'),
+      meta: { title: 'Nouvel entrepôt' },
+    },
+    {
+      path: '/entrepots/:id/modifier',
+      name: 'entrepots-modifier',
+      component: () => import('@/views/entrepots/EntrepotFormView.vue'),
+      props: true,
+      meta: { title: 'Modifier un entrepôt' },
+    },
 
-    // --- MODULE 3 : Zones ---
+    // --- MODULE 3 : Zones de stockage ---
     {
       path: '/zones',
       name: 'zones',
       component: () => import('@/views/zones/ZonesView.vue'),
-      meta: { title: 'Zones' },
+      meta: { title: 'Zones de stockage' },
+    },
+    {
+      path: '/zones/creer',
+      name: 'zones-creer',
+      component: () => import('@/views/zones/ZoneFormView.vue'),
+      meta: { title: 'Nouvelle zone' },
+    },
+    {
+      path: '/zones/:id/modifier',
+      name: 'zones-modifier',
+      component: () => import('@/views/zones/ZoneFormView.vue'),
+      props: true,
+      meta: { title: 'Modifier une zone' },
     },
 
     // --- MODULE 4 : Produits ---
