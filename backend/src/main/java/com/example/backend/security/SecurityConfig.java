@@ -70,8 +70,6 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Routes publiques (pas besoin d'être connecté)
                 .requestMatchers("/api/auth/**").permitAll()
-                // Console H2 accessible en dev
-                .requestMatchers("/h2-console/**").permitAll()
                 // Toutes les autres routes nécessitent d'être authentifié
                 .anyRequest().authenticated()
             )
@@ -86,10 +84,7 @@ public class SecurityConfig {
             .authenticationProvider(authenticationProvider())
 
             // Notre filtre JWT s'exécute AVANT le filtre standard
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-
-            // Nécessaire pour que la console H2 (iframe) fonctionne en dev
-            .headers(headers -> headers.frameOptions(fo -> fo.sameOrigin()));
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
