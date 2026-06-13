@@ -1,5 +1,5 @@
-/* ============================================================
-   POINT D'ENTRÉE CSS DE L'APPLICATION STOCKMASTER
+/* Styles globaux */
+/* POINT D'ENTRÉE CSS DE L'APPLICATION STOCKMASTER
    On importe les 3 couches de Tailwind CSS :
    - base    : reset CSS + styles HTML de base
    - components : classes réutilisables (.btn-primary, .card…)
