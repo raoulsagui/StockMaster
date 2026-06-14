@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 import produitService from '@/services/produitService'
 import categorieService from '@/services/categorieService'
 

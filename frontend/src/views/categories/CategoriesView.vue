@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 import categorieService from '@/services/categorieService'
 
 const categories  = ref([])

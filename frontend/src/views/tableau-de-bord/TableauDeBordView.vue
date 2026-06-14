@@ -10,7 +10,7 @@
 // ============================================================
 
 import { ref } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 
 // -------------------------------------------------------
 // DONNÉES MOCK — Simulent la réponse de l'API

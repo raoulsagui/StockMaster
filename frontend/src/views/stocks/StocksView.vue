@@ -1,7 +1,7 @@
 <script setup>
 // Vue placeholder pour le module : Stocks
 // Ce composant sera développé dans un module ultérieur.
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 </script>
 
 <template>

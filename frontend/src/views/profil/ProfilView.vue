@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 import { useAuthStore } from '@/stores/authStore'
 import utilisateurService from '@/services/utilisateurService'
 
