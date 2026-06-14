@@ -108,8 +108,8 @@ const colorMap = {
       <!-- ===== EN-TÊTE DE PAGE ===== -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">Tableau de bord</h1>
-          <p class="text-sm text-gray-500 mt-1">
+          <h1 class="hidden md:block text-2xl font-bold text-gray-900">Tableau de bord</h1>
+          <p class="hidden md:block text-sm text-gray-500 mt-1">
             Bienvenue, voici un aperçu de votre activité en temps réel.
           </p>
         </div>

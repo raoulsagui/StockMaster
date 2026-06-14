@@ -3,7 +3,7 @@
 // MODULE 1 : LISTE DES UTILISATEURS avec modals CRUD
 // ============================================================
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import utilisateurService from '@/services/utilisateurService'
 
@@ -34,6 +34,20 @@ async function chargerUtilisateurs() {
 const recherche    = ref('')
 const filtreRole   = ref('')
 const filtreStatut = ref('')
+const showFiltres  = ref(false)
+
+const nbFiltresActifs = computed(() =>
+  (filtreRole.value ? 1 : 0) + (filtreStatut.value ? 1 : 0)
+)
+
+// -------------------------------------------------------
+// PAGINATION
+// -------------------------------------------------------
+const parPage    = ref(10)
+const pageCourante = ref(1)
+
+// Remettre à la page 1 quand les filtres changent
+watch([recherche, filtreRole, filtreStatut], () => { pageCourante.value = 1 })
 
 const utilisateursFiltres = computed(() =>
   utilisateurs.value.filter((u) => {
@@ -51,6 +65,12 @@ const utilisateursFiltres = computed(() =>
     return matchTexte && matchRole && matchStatut
   })
 )
+
+const totalPages       = computed(() => Math.ceil(utilisateursFiltres.value.length / parPage.value) || 1)
+const utilisateursPagines = computed(() => {
+  const debut = (pageCourante.value - 1) * parPage.value
+  return utilisateursFiltres.value.slice(debut, debut + parPage.value)
+})
 
 // -------------------------------------------------------
 // MODAL CRÉATION
@@ -204,11 +224,11 @@ const formatDate = (dateStr) => {
 
       <!-- EN-TÊTE -->
       <div class="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-        <div>
+        <div class="hidden md:block">
           <h1 class="text-xl md:text-2xl font-bold text-gray-900">Utilisateurs</h1>
           <p class="text-sm text-gray-500 mt-0.5">{{ utilisateurs.length }} utilisateurs enregistrés</p>
         </div>
-        <button @click="ouvrirModalCreer" class="btn-primary w-full sm:w-auto justify-center">
+        <button @click="ouvrirModalCreer" class="btn-primary justify-center self-end sm:self-auto">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -218,30 +238,101 @@ const formatDate = (dateStr) => {
 
       <!-- FILTRES -->
       <div class="card p-3 md:p-4">
-        <div class="flex flex-col sm:flex-row gap-3">
+        <!-- Mobile : recherche + bouton filtres -->
+        <div class="flex gap-3 md:hidden">
           <div class="relative flex-1">
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
             </svg>
-            <input v-model="recherche" type="text"
-              placeholder="Rechercher…" class="form-input pl-9"/>
+            <input v-model="recherche" type="text" placeholder="Rechercher…" class="form-input pl-9"/>
           </div>
-          <select v-model="filtreRole" class="form-input sm:w-44">
+          <button @click="showFiltres = true"
+            :class="['relative p-2.5 rounded-lg border transition-colors flex-shrink-0',
+              nbFiltresActifs ? 'border-blue-500 bg-blue-50 text-blue-600' : 'border-gray-200 text-gray-500 hover:bg-gray-50']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/>
+            </svg>
+            <span v-if="nbFiltresActifs"
+              class="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-xs rounded-full flex items-center justify-center">
+              {{ nbFiltresActifs }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Desktop : tous les filtres en ligne -->
+        <div class="hidden md:flex gap-3">
+          <div class="relative flex-1">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            </svg>
+            <input v-model="recherche" type="text" placeholder="Rechercher…" class="form-input pl-9"/>
+          </div>
+          <select v-model="filtreRole" class="form-input w-44">
             <option value="">Tous les rôles</option>
             <option value="ADMIN">Administrateur</option>
             <option value="GESTIONNAIRE">Gestionnaire</option>
             <option value="MAGASINIER">Magasinier</option>
             <option value="AUDITEUR">Auditeur</option>
           </select>
-          <select v-model="filtreStatut" class="form-input sm:w-40">
+          <select v-model="filtreStatut" class="form-input w-40">
             <option value="">Tous les statuts</option>
             <option value="actif">Actif</option>
             <option value="inactif">Inactif</option>
           </select>
         </div>
       </div>
+
+      <!-- BOTTOM SHEET FILTRES (mobile) -->
+      <Teleport to="body">
+        <Transition enter-active-class="transition ease-out duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100"
+          leave-active-class="transition ease-in duration-150" leave-from-class="opacity-100" leave-to-class="opacity-0">
+          <div v-if="showFiltres" class="fixed inset-0 z-50 bg-black/40 md:hidden" @click="showFiltres = false"></div>
+        </Transition>
+        <Transition enter-active-class="transition ease-out duration-300" enter-from-class="translate-y-full" enter-to-class="translate-y-0"
+          leave-active-class="transition ease-in duration-200" leave-from-class="translate-y-0" leave-to-class="translate-y-full">
+          <div v-if="showFiltres" class="fixed bottom-0 inset-x-0 z-50 bg-white rounded-t-2xl shadow-2xl md:hidden">
+            <div class="flex justify-center pt-3 pb-1">
+              <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+            </div>
+            <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+              <p class="text-sm font-semibold text-gray-800">Filtres</p>
+              <button @click="showFiltres = false" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            <div class="px-5 py-4 space-y-4">
+              <div>
+                <label class="form-label">Rôle</label>
+                <div class="grid grid-cols-2 gap-2 mt-1">
+                  <button v-for="r in [['', 'Tous'], ['ADMIN', 'Administrateur'], ['GESTIONNAIRE', 'Gestionnaire'], ['MAGASINIER', 'Magasinier'], ['AUDITEUR', 'Auditeur']]" :key="r[0]"
+                    @click="filtreRole = r[0]"
+                    :class="['px-3 py-2 rounded-lg text-sm font-medium border transition-colors',
+                      filtreRole === r[0] ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-200 hover:bg-gray-50']">
+                    {{ r[1] }}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label class="form-label">Statut</label>
+                <div class="grid grid-cols-3 gap-2 mt-1">
+                  <button v-for="s in [['', 'Tous'], ['actif', 'Actif'], ['inactif', 'Inactif']]" :key="s[0]"
+                    @click="filtreStatut = s[0]"
+                    :class="['px-3 py-2 rounded-lg text-sm font-medium border transition-colors',
+                      filtreStatut === s[0] ? 'bg-blue-600 text-white border-blue-600' : 'text-gray-600 border-gray-200 hover:bg-gray-50']">
+                    {{ s[1] }}
+                  </button>
+                </div>
+              </div>
+              <button @click="filtreRole = ''; filtreStatut = ''"
+                class="w-full py-2 text-sm text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                Réinitialiser les filtres
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </Teleport>
 
       <!-- ERREUR -->
       <div v-if="erreur" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">{{ erreur }}</div>
@@ -275,7 +366,7 @@ const formatDate = (dateStr) => {
                 </td>
               </tr>
               <tr
-                v-for="u in utilisateursFiltres"
+                v-for="u in utilisateursPagines"
                 :key="u.id"
                 class="hover:bg-gray-50 transition-colors"
               >
@@ -343,6 +434,34 @@ const formatDate = (dateStr) => {
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div v-if="!isLoading && totalPages > 1"
+          class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t border-gray-100">
+          <p class="text-sm text-gray-500">
+            {{ (pageCourante - 1) * parPage + 1 }}–{{ Math.min(pageCourante * parPage, utilisateursFiltres.length) }}
+            sur {{ utilisateursFiltres.length }} utilisateurs
+          </p>
+          <div class="flex items-center gap-1">
+            <button @click="pageCourante--" :disabled="pageCourante === 1"
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button v-for="p in totalPages" :key="p" @click="pageCourante = p"
+              :class="['w-8 h-8 rounded-lg text-sm font-medium transition-colors',
+                p === pageCourante ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100']">
+              {{ p }}
+            </button>
+            <button @click="pageCourante++" :disabled="pageCourante === totalPages"
+              class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

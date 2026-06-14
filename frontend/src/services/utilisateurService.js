@@ -78,6 +78,27 @@ const utilisateurService = {
   async reinitialiserMotDePasse(id) {
     await api.post(`/utilisateurs/${id}/reinitialiser-mdp`)
   },
+
+  /**
+   * PATCH /api/utilisateurs/{id}/profil
+   * Modifie le prénom et le nom de l'utilisateur connecté.
+   * @param {number} id
+   * @param {Object} data - { prenom, nom }
+   * @returns {Promise<UtilisateurResponseDTO>}
+   */
+  async modifierProfil(id, data) {
+    const response = await api.patch(`/utilisateurs/${id}/profil`, data)
+    return response.data
+  },
+
+  /**
+   * POST /api/utilisateurs/{id}/changer-mot-de-passe
+   * @param {number} id
+   * @param {Object} data - { ancienMotDePasse, nouveauMotDePasse, confirmerMotDePasse }
+   */
+  async changerMotDePasse(id, data) {
+    await api.post(`/utilisateurs/${id}/changer-mot-de-passe`, data)
+  },
 }
 
 export default utilisateurService

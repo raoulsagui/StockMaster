@@ -1,6 +1,7 @@
 package com.example.backend.module.utilisateur.controller;
 
 import com.example.backend.module.utilisateur.dto.ChangerMotDePasseRequestDTO;
+import com.example.backend.module.utilisateur.dto.ProfilRequestDTO;
 import com.example.backend.module.utilisateur.dto.UtilisateurRequestDTO;
 import com.example.backend.module.utilisateur.dto.UtilisateurResponseDTO;
 import com.example.backend.module.utilisateur.service.UtilisateurService;
@@ -103,6 +104,19 @@ public class UtilisateurController {
     public ResponseEntity<Void> reinitialiserMotDePasse(@PathVariable Long id) {
         utilisateurService.reinitialiserMotDePasse(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * PATCH /api/utilisateurs/{id}/profil
+     * Modification du profil : prénom et nom uniquement.
+     * Accessible par tous les rôles (chaque user gère son propre profil).
+     */
+    @PatchMapping("/{id}/profil")
+    public ResponseEntity<UtilisateurResponseDTO> modifierProfil(
+            @PathVariable Long id,
+            @Valid @RequestBody ProfilRequestDTO dto
+    ) {
+        return ResponseEntity.ok(utilisateurService.modifierProfil(id, dto));
     }
 
     /**

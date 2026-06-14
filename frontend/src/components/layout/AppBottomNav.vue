@@ -18,10 +18,17 @@ const mainItems = [
 
 // Tous les autres liens dans le panneau "Plus"
 const moreItems = [
-  { label: 'Fournisseurs', to: 'fournisseurs', icon: 'fournisseurs' },
-  { label: 'Inventaires',  to: 'inventaires',  icon: 'inventaires'  },
-  { label: 'Rapports',     to: 'rapports',     icon: 'rapports'     },
-  { label: 'Utilisateurs', to: 'utilisateurs', icon: 'utilisateurs' },
+  { label: 'Zones',        to: 'zones',        icon: 'zones'        },
+  { label: 'Emplacements', to: 'emplacements', icon: 'emplacements' },
+  { label: 'Catégories',   to: 'categories',   icon: 'categories'   },
+  { label: 'Fournisseurs', to: 'fournisseurs',  icon: 'fournisseurs' },
+  { label: 'Entrées',      to: 'entrees',       icon: 'entrees'      },
+  { label: 'Sorties',      to: 'sorties',       icon: 'sorties'      },
+  { label: 'Transferts',   to: 'transferts',    icon: 'transferts'   },
+  { label: 'Inventaires',  to: 'inventaires',   icon: 'inventaires'  },
+  { label: 'Alertes',      to: 'alertes',       icon: 'alertes'      },
+  { label: 'Rapports',     to: 'rapports',      icon: 'rapports'     },
+  { label: 'Utilisateurs', to: 'utilisateurs',  icon: 'utilisateurs' },
 ]
 
 const iconPaths = {
@@ -46,52 +53,67 @@ const iconPaths = {
 </script>
 
 <template>
-  <!-- Panneau "Plus" — affiché au-dessus de la barre -->
+  <!-- Overlay -->
   <Transition
     enter-active-class="transition ease-out duration-200"
-    enter-from-class="opacity-0 translate-y-4"
-    enter-to-class="opacity-100 translate-y-0"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
     leave-active-class="transition ease-in duration-150"
-    leave-from-class="opacity-100 translate-y-0"
-    leave-to-class="opacity-0 translate-y-4"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="showMore" class="lg:hidden fixed inset-0 z-40 bg-black/40" @click="showMore = false"></div>
+  </Transition>
+
+  <!-- Bottom sheet "Plus" -->
+  <Transition
+    enter-active-class="transition ease-out duration-300"
+    enter-from-class="translate-y-full"
+    enter-to-class="translate-y-0"
+    leave-active-class="transition ease-in duration-200"
+    leave-from-class="translate-y-0"
+    leave-to-class="translate-y-full"
   >
     <div
       v-if="showMore"
-      class="lg:hidden fixed bottom-16 inset-x-0 z-40 bg-white border-t border-gray-200 shadow-lg safe-bottom"
+      class="lg:hidden fixed bottom-16 inset-x-0 z-50 bg-white rounded-t-2xl shadow-2xl"
     >
-      <!-- Overlay pour fermer -->
-      <div class="fixed inset-0 bottom-16 bg-black/20 -z-10" @click="showMore = false"></div>
+      <!-- Handle -->
+      <div class="flex justify-center pt-3 pb-1">
+        <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+      </div>
 
-      <div class="px-4 py-3">
-        <div class="flex items-center justify-between mb-3">
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tous les modules</p>
-          <button @click="showMore = false" class="p-1 text-gray-400 hover:text-gray-600">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        </div>
-        <div class="grid grid-cols-4 gap-2">
-          <RouterLink
-            v-for="item in moreItems"
-            :key="item.to"
-            :to="{ name: item.to }"
-            @click="showMore = false"
-            :class="[
-              'flex flex-col items-center gap-1 p-3 rounded-xl transition-colors',
-              isActive(item.to) ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50',
-            ]"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <template v-if="item.icon === 'emplacements'">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.emplacements1"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.emplacements2"/>
-              </template>
-              <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths[item.icon]"/>
-            </svg>
-            <span class="text-xs font-medium text-center leading-tight">{{ item.label }}</span>
-          </RouterLink>
-        </div>
+      <!-- Header -->
+      <div class="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+        <p class="text-sm font-semibold text-gray-800">Plus</p>
+        <button @click="showMore = false" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Items en grille 4 colonnes -->
+      <div class="grid grid-cols-4 gap-1 px-4 py-4">
+        <RouterLink
+          v-for="item in moreItems"
+          :key="item.to"
+          :to="{ name: item.to }"
+          @click="showMore = false"
+          :class="[
+            'flex flex-col items-center gap-1.5 p-3 rounded-xl transition-colors',
+            isActive(item.to) ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50',
+          ]"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <template v-if="item.icon === 'emplacements'">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.emplacements1"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths.emplacements2"/>
+            </template>
+            <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths[item.icon]"/>
+          </svg>
+          <span class="text-xs font-medium text-center leading-tight">{{ item.label }}</span>
+        </RouterLink>
       </div>
     </div>
   </Transition>

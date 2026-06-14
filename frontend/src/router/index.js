@@ -82,6 +82,14 @@ const router = createRouter({
       meta: { title: 'Utilisateurs' },
     },
 
+    // Profil de l'utilisateur connecté
+    {
+      path: '/profil',
+      name: 'profil',
+      component: () => import('@/views/profil/ProfilView.vue'),
+      meta: { title: 'Mon profil' },
+    },
+
     // --- MODULE 2 : Entrepôts (placeholder) ---
     {
       path: '/entrepots',

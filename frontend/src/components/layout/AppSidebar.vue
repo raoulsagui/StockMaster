@@ -26,11 +26,18 @@ const props = defineProps({
 const menuItems = [
   { section: null,             label: 'Tableau de bord', icon: 'dashboard',    to: 'tableau-de-bord' },
   { section: 'Organisation',   label: 'Entrepôts',       icon: 'warehouse',    to: 'entrepots' },
+  { section: 'Organisation',   label: 'Zones',           icon: 'zones',        to: 'zones' },
+  { section: 'Organisation',   label: 'Emplacements',    icon: 'emplacements', to: 'emplacements' },
   { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits' },
+  { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories' },
   { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs' },
   { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks' },
+  { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees' },
+  { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties' },
+  { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts' },
   { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes' },
   { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires' },
+  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes' },
   { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports' },
   { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs' },
 ]
@@ -49,10 +56,10 @@ const isActive = (name) => {
     return ['stocks', 'entrees', 'sorties', 'transferts'].includes(route.name)
   }
   if (name === 'entrepots') {
-    return ['entrepots', 'zones', 'emplacements'].includes(route.name)
+    return route.name === 'entrepots'
   }
   if (name === 'produits') {
-    return ['produits', 'categories'].includes(route.name)
+    return route.name === 'produits'
   }
   return route.name === name
 }

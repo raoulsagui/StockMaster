@@ -1,5 +1,6 @@
 package com.example.backend.module.utilisateur.service;
 
+import com.example.backend.module.utilisateur.dto.ProfilRequestDTO;
 import com.example.backend.module.utilisateur.dto.UtilisateurRequestDTO;
 import com.example.backend.module.utilisateur.dto.UtilisateurResponseDTO;
 import com.example.backend.module.utilisateur.entity.Utilisateur;
@@ -164,6 +165,21 @@ public class UtilisateurService {
 
         emailService.envoyerReinitialisationMotDePasse(
                 utilisateur.getEmail(), utilisateur.getPrenom(), motDePasseProvisoire);
+    }
+
+    /**
+     * Modifie uniquement le prénom et le nom de l'utilisateur connecté.
+     * L'email et le rôle ne sont pas modifiables depuis le profil.
+     */
+    @Transactional
+    public UtilisateurResponseDTO modifierProfil(Long id, ProfilRequestDTO dto) {
+        Utilisateur utilisateur = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : id=" + id));
+
+        utilisateur.setPrenom(dto.getPrenom());
+        utilisateur.setNom(dto.getNom());
+
+        return UtilisateurResponseDTO.fromEntity(utilisateurRepository.save(utilisateur));
     }
 
     /**

@@ -38,6 +38,7 @@ const roleLabel = computed(() => rolesLabels[authStore.role] ?? authStore.role)
 const pageTitles = {
   'tableau-de-bord': 'Tableau de bord',
   'utilisateurs':    'Gestion des utilisateurs',
+  'profil':          'Mon profil',
   'entrepots':       'Gestion des entrepôts',
   'zones':           'Zones de stockage',
   'emplacements':    'Emplacements',
@@ -60,8 +61,8 @@ const pageTitle = computed(() => pageTitles[route.name] ?? 'StockMaster')
 <template>
   <header class="h-16 bg-white border-b border-gray-200 flex items-center px-4 gap-3 z-30 sticky top-0 flex-shrink-0">
 
-    <!-- PROFIL : à gauche sur mobile, à droite sur desktop via order -->
-    <div class="relative lg:order-4" v-click-outside="closeProfileMenu">
+    <!-- PROFIL : à droite sur mobile et desktop -->
+    <div class="relative order-3 lg:order-4" v-click-outside="closeProfileMenu">
       <button
         @click.stop="isProfileMenuOpen = !isProfileMenuOpen"
         class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
@@ -85,14 +86,15 @@ const pageTitle = computed(() => pageTitles[route.name] ?? 'StockMaster')
       >
         <div
           v-if="isProfileMenuOpen"
-          class="absolute left-0 lg:left-auto lg:right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
+          class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50"
         >
           <div class="px-4 py-3 border-b border-gray-100">
             <p class="text-sm font-semibold text-gray-800">{{ authStore.nomComplet }}</p>
             <p class="text-xs text-gray-500">{{ authStore.utilisateur?.email }}</p>
             <p class="text-xs text-blue-600 font-medium mt-0.5">{{ roleLabel }}</p>
           </div>
-          <button class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+          <button @click="router.push({ name: 'profil' }); closeProfileMenu()"
+            class="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -131,7 +133,7 @@ const pageTitle = computed(() => pageTitles[route.name] ?? 'StockMaster')
     </button>
 
     <!-- TITRE DE LA PAGE (mobile uniquement, centré) -->
-    <h2 class="flex-1 text-base font-semibold text-gray-800 text-center lg:hidden lg:order-2">
+    <h2 class="flex-1 text-base font-semibold text-gray-800 text-center order-2 lg:hidden lg:order-2">
       {{ pageTitle }}
     </h2>
 
@@ -140,7 +142,7 @@ const pageTitle = computed(() => pageTitles[route.name] ?? 'StockMaster')
 
     <!-- NOTIFICATIONS -->
     <button
-      class="relative lg:order-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+      class="relative order-1 lg:order-3 p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
       aria-label="Notifications"
     >
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
