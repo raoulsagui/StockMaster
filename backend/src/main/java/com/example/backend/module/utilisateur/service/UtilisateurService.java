@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 /**
@@ -30,6 +31,23 @@ public class UtilisateurService {
 
     private final UtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+
+    // Caractères utilisés pour générer les mots de passe provisoires
+    private static final String CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#!";
+    private static final SecureRandom RANDOM = new SecureRandom();
+
+    /**
+     * Génère un mot de passe provisoire aléatoire de 10 caractères.
+     * Utilise SecureRandom (cryptographiquement sûr).
+     */
+    private String genererMotDePasseProvisoire() {
+        StringBuilder sb = new StringBuilder(10);
+        for (int i = 0; i < 10; i++) {
+            sb.append(CHARS.charAt(RANDOM.nextInt(CHARS.length())));
+        }
+        return sb.toString();
+    }
 
     /**
      * Récupère tous les utilisateurs.
@@ -54,9 +72,8 @@ public class UtilisateurService {
 
     /**
      * Crée un nouvel utilisateur.
-     *
-     * @Transactional : si une erreur survient, tout est annulé (rollback).
-     * Ex : si le save() échoue, l'email n'est pas réservé non plus.
+     * Le mot de passe est généré automatiquement et envoyé par email.
+     * L'utilisateur devra le changer à sa première connexion.
      */
     @Transactional
     public UtilisateurResponseDTO creer(UtilisateurRequestDTO dto) {
@@ -65,25 +82,26 @@ public class UtilisateurService {
             throw new RuntimeException("Un utilisateur avec cet email existe déjà");
         }
 
-        // Règle métier : mot de passe obligatoire à la création
-        if (dto.getMotDePasse() == null || dto.getMotDePasse().length() < 8) {
-            throw new RuntimeException("Le mot de passe doit contenir au moins 8 caractères");
-        }
+        // Génération du mot de passe provisoire
+        String motDePasseProvisoire = genererMotDePasseProvisoire();
 
-        // Construction de l'entité via le pattern Builder (Lombok @Builder)
+        // Construction de l'entité
         Utilisateur utilisateur = Utilisateur.builder()
                 .prenom(dto.getPrenom())
                 .nom(dto.getNom())
                 .email(dto.getEmail())
-                .motDePasse(passwordEncoder.encode(dto.getMotDePasse()))
+                .motDePasse(passwordEncoder.encode(motDePasseProvisoire))
                 .role(dto.getRole())
                 .actif(true)
-                // À la création, l'utilisateur devra changer son mot de passe
-                // à sa première connexion (mot de passe défini par l'admin)
+                // L'utilisateur devra changer son mot de passe à la première connexion
                 .doitChangerMotDePasse(true)
                 .build();
 
         Utilisateur saved = utilisateurRepository.save(utilisateur);
+
+        // Envoi de l'email avec les identifiants (hors transaction pour ne pas bloquer)
+        emailService.envoyerIdentifiantsCreation(saved.getEmail(), saved.getPrenom(), motDePasseProvisoire);
+
         return UtilisateurResponseDTO.fromEntity(saved);
     }
 
@@ -108,14 +126,8 @@ public class UtilisateurService {
         utilisateur.setNom(dto.getNom());
         utilisateur.setEmail(dto.getEmail());
         utilisateur.setRole(dto.getRole());
-
-        // Mise à jour du mot de passe uniquement s'il est fourni
-        if (dto.getMotDePasse() != null && !dto.getMotDePasse().isBlank()) {
-            if (dto.getMotDePasse().length() < 8) {
-                throw new RuntimeException("Le mot de passe doit contenir au moins 8 caractères");
-            }
-            utilisateur.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-        }
+        // Le mot de passe n'est plus modifiable via ce formulaire.
+        // Utiliser POST /reinitialiser-mdp ou POST /changer-mot-de-passe.
 
         Utilisateur saved = utilisateurRepository.save(utilisateur);
         return UtilisateurResponseDTO.fromEntity(saved);
@@ -138,20 +150,20 @@ public class UtilisateurService {
     }
 
     /**
-     * Réinitialise le mot de passe — remet aussi doitChangerMotDePasse à true.
+     * Réinitialise le mot de passe — génère un nouveau provisoire + envoie par email.
      */
     @Transactional
     public void reinitialiserMotDePasse(Long id) {
         Utilisateur utilisateur = utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable : id=" + id));
 
-        String motDePasseTemp = "Temp@" + System.currentTimeMillis() % 10000;
-        utilisateur.setMotDePasse(passwordEncoder.encode(motDePasseTemp));
-        // L'utilisateur devra changer son mot de passe après réinitialisation
+        String motDePasseProvisoire = genererMotDePasseProvisoire();
+        utilisateur.setMotDePasse(passwordEncoder.encode(motDePasseProvisoire));
         utilisateur.setDoitChangerMotDePasse(true);
         utilisateurRepository.save(utilisateur);
 
-        System.out.println("Mot de passe temporaire pour " + utilisateur.getEmail() + " : " + motDePasseTemp);
+        emailService.envoyerReinitialisationMotDePasse(
+                utilisateur.getEmail(), utilisateur.getPrenom(), motDePasseProvisoire);
     }
 
     /**

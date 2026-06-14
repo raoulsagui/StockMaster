@@ -6,24 +6,18 @@
    - utilities  : toutes les classes utilitaires (bg-, text-, flex-, etc.)
    ============================================================ */
 
+/* Import de la police Inter — doit être AVANT les directives Tailwind */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* -------------------------------------------------------
-   COUCHE BASE
-   On surcharge les styles par défaut du navigateur
-   ------------------------------------------------------- */
 @layer base {
-  /* Import de la police Inter depuis Google Fonts */
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-
-  /* Appliqué à tous les éléments */
   * {
     box-sizing: border-box;
   }
 
-  /* Style global du body */
   body {
     @apply bg-gray-100 text-gray-800 font-sans antialiased;
   }
@@ -131,6 +125,20 @@
   .badge-inactif {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
            bg-red-100 text-red-800;
+  }
+
+  /* Safe area pour iOS (bottom nav) */
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Masque la scrollbar visuellement tout en gardant le scroll fonctionnel */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE/Edge */
+    scrollbar-width: none;     /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;             /* Chrome/Safari */
   }
 
   /* --- TABLE --- */

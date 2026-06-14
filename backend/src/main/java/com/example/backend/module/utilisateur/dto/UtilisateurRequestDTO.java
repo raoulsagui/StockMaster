@@ -32,15 +32,9 @@ public class UtilisateurRequestDTO {
     @Email(message = "L'email n'est pas valide")
     private String email;
 
-    /**
-     * Mot de passe : obligatoire uniquement à la création.
-     * En modification, si null/vide → on ne change pas le mot de passe.
-     * La validation de longueur minimum est gérée dans le service.
-     */
-    private String motDePasse;
-
     @NotNull(message = "Le rôle est obligatoire")
     private Role role;
 
+    // motDePasse supprimé : généré automatiquement à la création et envoyé par email
     // actif est géré séparément via l'endpoint PATCH /utilisateurs/{id}/statut
 }

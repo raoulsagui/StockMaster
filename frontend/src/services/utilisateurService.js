@@ -37,8 +37,8 @@ const utilisateurService = {
   /**
    * POST /api/utilisateurs
    * Crée un nouvel utilisateur.
-   * Réservé aux ADMIN (Spring Security vérifie côté backend).
-   * @param {Object} data - { prenom, nom, email, motDePasse, role }
+   * Le mot de passe est généré automatiquement côté backend et envoyé par email.
+   * @param {Object} data - { prenom, nom, email, role }
    * @returns {Promise<UtilisateurResponseDTO>}
    */
   async creer(data) {
