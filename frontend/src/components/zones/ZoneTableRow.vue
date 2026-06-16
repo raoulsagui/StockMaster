@@ -67,7 +67,7 @@ function getCouleurTaux(taux) {
 }
 
 function formatCapacite(val) {
-  return val != null ? val.toLocaleString('fr-FR') + ' m²' : '—'
+  return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
 }
 </script>
 
@@ -112,13 +112,6 @@ function formatCapacite(val) {
           {{ zone.tauxOccupation }} %
         </span>
       </div>
-    </td>
-
-    <!-- Capacité utilisée / totale -->
-    <td class="table-cell text-sm text-gray-500">
-      {{ formatCapacite(zone.capaciteUtilisee) }}
-      <span class="text-gray-300 mx-0.5">/</span>
-      {{ formatCapacite(zone.capaciteTotale) }}
     </td>
 
     <!-- Badge statut -->

@@ -55,11 +55,11 @@ function getCouleurTaux(taux) {
 }
 
 /**
- * Formate une capacité en m² avec séparateur de milliers.
- * Ex : 5000 → "5 000 m²"
+ * Formate une capacité en m³ avec séparateur de milliers.
+ * Ex : 5000 → "5 000 m³"
  */
 function formatCapacite(val) {
-  return val != null ? val.toLocaleString('fr-FR') + ' m²' : '—'
+  return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
 }
 </script>
 

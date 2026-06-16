@@ -47,8 +47,8 @@ public class EntrepotService {
         double utilise = dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0;
         if (utilise > dto.getCapaciteTotale()) {
             throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m²) ne peut pas dépasser "
-                + "la capacité totale (" + dto.getCapaciteTotale() + " m²)"
+                "La capacité utilisée (" + utilise + " m³) ne peut pas dépasser "
+                + "la capacité totale (" + dto.getCapaciteTotale() + " m³)"
             );
         }
 
@@ -82,8 +82,8 @@ public class EntrepotService {
 
         if (utilise > dto.getCapaciteTotale()) {
             throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m²) ne peut pas dépasser "
-                + "la nouvelle capacité totale (" + dto.getCapaciteTotale() + " m²)"
+                "La capacité utilisée (" + utilise + " m³) ne peut pas dépasser "
+                + "la nouvelle capacité totale (" + dto.getCapaciteTotale() + " m³)"
             );
         }
 

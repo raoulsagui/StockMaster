@@ -35,7 +35,7 @@ public class EntrepotResponseDTO {
     private Double tauxOccupation;
 
     /**
-     * Capacité libre restante en m².
+     * Capacité libre restante en m³.
      */
     private Double capaciteDisponible;
 

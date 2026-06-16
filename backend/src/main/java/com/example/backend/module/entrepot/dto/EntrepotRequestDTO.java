@@ -24,7 +24,7 @@ public class EntrepotRequestDTO {
     private String adresse;
 
     @NotNull(message = "La capacité totale est obligatoire")
-    @DecimalMin(value = "1.0", message = "La capacité totale doit être d'au moins 1 m²")
+    @DecimalMin(value = "1.0", message = "La capacité totale doit être d'au moins 1 m³")
     private Double capaciteTotale;
 
     /**

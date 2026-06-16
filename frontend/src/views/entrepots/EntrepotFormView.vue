@@ -11,7 +11,7 @@
 
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import AppLayout from '@/components/layout/AppLayout.vue'
+import AppLayout from '@/layout/AppLayout.vue'
 import entrepotService from '@/services/entrepotService'
 import utilisateurService from '@/services/utilisateurService'
 
@@ -88,7 +88,7 @@ const valider = () => {
 
   const capacite = parseFloat(form.value.capaciteTotale)
   if (!form.value.capaciteTotale || isNaN(capacite) || capacite < 1)
-    erreurs.value.capaciteTotale = 'La capacité totale doit être d\'au moins 1 m².'
+    erreurs.value.capaciteTotale = 'La capacité totale doit être d\'au moins 1 m³.'
 
   const utilise = parseFloat(form.value.capaciteUtilisee) || 0
   if (!isNaN(capacite) && utilise > capacite)
@@ -197,7 +197,7 @@ const annuler = () => router.push({ name: 'entrepots' })
 
             <div>
               <label for="capaciteTotale" class="form-label">
-                Capacité totale (m²) <span class="text-red-500">*</span>
+                Capacité totale (m³) <span class="text-red-500">*</span>
               </label>
               <input
                 id="capaciteTotale" v-model="form.capaciteTotale" type="number" min="1" step="0.1"
@@ -208,7 +208,7 @@ const annuler = () => router.push({ name: 'entrepots' })
             </div>
 
             <div>
-              <label for="capaciteUtilisee" class="form-label">Capacité utilisée (m²)</label>
+              <label for="capaciteUtilisee" class="form-label">Capacité utilisée (m³)</label>
               <input
                 id="capaciteUtilisee" v-model="form.capaciteUtilisee" type="number" min="0" step="0.1"
                 placeholder="Ex : 1200"

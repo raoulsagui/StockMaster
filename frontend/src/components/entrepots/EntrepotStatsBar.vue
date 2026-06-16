@@ -45,9 +45,9 @@ function getCouleurTaux(taux) {
   return 'text-green-600'
 }
 
-// Formate une valeur en m² avec séparateur de milliers
+// Formate une valeur en m³ avec séparateur de milliers
 function formatCapacite(val) {
-  return val != null ? val.toLocaleString('fr-FR') + ' m²' : '—'
+  return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
 }
 </script>
 

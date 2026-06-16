@@ -13,7 +13,7 @@ import java.util.List;
  * Entité JPA représentant un entrepôt.
  *
  * Un entrepôt est le conteneur physique principal du système de stockage.
- * Il possède une capacité totale et une capacité utilisée (en m²).
+ * Il possède une capacité totale et une capacité utilisée (en m³).
  * La capacité utilisée est mise à jour lors des mouvements de stock.
  *
  * Relation avec Zone     : un entrepôt peut contenir plusieurs zones (OneToMany).
@@ -107,7 +107,7 @@ public class Entrepot {
     }
 
     /**
-     * Capacité disponible restante en m².
+     * Capacité disponible restante en m³.
      *
      * @return capacité libre
      */
