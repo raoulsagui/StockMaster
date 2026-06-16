@@ -104,6 +104,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Spring Mail : envoi d'emails via JavaMailSender -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- Dépendances BDD-->
 		<dependency>
     		<groupId>com.mysql</groupId>

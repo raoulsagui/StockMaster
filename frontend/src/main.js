@@ -24,5 +24,21 @@ app.use(createPinia())
 // Vue Router : gestion de la navigation entre les pages
 app.use(router)
 
+// Directive v-click-outside : ferme un élément quand on clique en dehors
+// Utilisée par AppHeader pour le menu profil
+app.directive('click-outside', {
+  mounted(el, binding) {
+    el._clickOutsideHandler = (event) => {
+      if (!el.contains(event.target)) {
+        binding.value(event)
+      }
+    }
+    document.addEventListener('click', el._clickOutsideHandler)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el._clickOutsideHandler)
+  },
+})
+
 // Montage de l'application dans le <div id="app"> de index.html
 app.mount('#app')

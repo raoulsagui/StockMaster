@@ -81,23 +81,13 @@ const router = createRouter({
       component: () => import('@/views/utilisateurs/UtilisateursView.vue'),
       meta: { title: 'Utilisateurs' },
     },
+
+    // Profil de l'utilisateur connecté
     {
-      // Route de création : pas de paramètre d'ID
-      path: '/utilisateurs/creer',
-      name: 'utilisateurs-creer',
-      component: () => import('@/views/utilisateurs/UtilisateurFormView.vue'),
-      meta: { title: 'Nouvel utilisateur' },
-    },
-    {
-      // Route de modification : :id est un paramètre dynamique
-      // Ex: /utilisateurs/3/modifier → props.id = "3"
-      path: '/utilisateurs/:id/modifier',
-      name: 'utilisateurs-modifier',
-      component: () => import('@/views/utilisateurs/UtilisateurFormView.vue'),
-      // props: true → Vue Router passe automatiquement les paramètres
-      // de la route comme props du composant (:id devient props.id)
-      props: true,
-      meta: { title: 'Modifier un utilisateur' },
+      path: '/profil',
+      name: 'profil',
+      component: () => import('@/views/profil/ProfilView.vue'),
+      meta: { title: 'Mon profil' },
     },
 
     // --- MODULE 2 : Entrepôts ---

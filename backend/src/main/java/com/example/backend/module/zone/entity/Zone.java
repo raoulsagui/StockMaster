@@ -57,20 +57,6 @@ public class Zone {
     private String description;
 
     /**
-     * Capacité totale de la zone en mètres carrés.
-     */
-    @Column(nullable = false)
-    private Double capaciteTotale;
-
-    /**
-     * Capacité actuellement occupée dans cette zone (en m²).
-     * Mise à jour lors des mouvements de stock.
-     */
-    @Builder.Default
-    @Column(nullable = false)
-    private Double capaciteUtilisee = 0.0;
-
-    /**
      * Statut de la zone.
      * Une zone inactive n'accepte plus de nouveau stock.
      */
@@ -103,26 +89,4 @@ public class Zone {
         this.dateCreation = LocalDateTime.now();
     }
 
-    // -------------------------------------------------------
-    // MÉTHODES MÉTIER
-    // -------------------------------------------------------
-
-    /**
-     * Calcule le taux d'occupation de la zone en pourcentage.
-     *
-     * @return taux entre 0.0 et 100.0
-     */
-    public double getTauxOccupation() {
-        if (capaciteTotale == null || capaciteTotale == 0) return 0.0;
-        return (capaciteUtilisee / capaciteTotale) * 100.0;
-    }
-
-    /**
-     * Capacité disponible restante dans cette zone.
-     *
-     * @return capacité libre en m²
-     */
-    public double getCapaciteDisponible() {
-        return capaciteTotale - capaciteUtilisee;
-    }
 }

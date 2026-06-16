@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
  *   - 2 entrepôts avec zones de stockage
  *
  * Identifiants de dev :
- *   admin@stockmaster.fr     / Admin@1234
+ *   admin@stockmaster.fr        / Admin@1234
  *   gestionnaire@stockmaster.fr / Gestionnaire@1234
  */
 @Component
@@ -69,8 +69,6 @@ public class DataInitializer implements CommandLineRunner {
         // -------------------------------------------------------
         // ENTREPÔTS
         // -------------------------------------------------------
-
-        // Entrepôt 1 — Principal Paris
         Entrepot entrepot1 = Entrepot.builder()
                 .nom("Entrepôt Principal Paris")
                 .adresse("15 Rue de la Logistique, 75001 Paris")
@@ -82,7 +80,6 @@ public class DataInitializer implements CommandLineRunner {
         entrepot1 = entrepotRepository.save(entrepot1);
         System.out.println("✅ Entrepôt créé : " + entrepot1.getNom());
 
-        // Entrepôt 2 — Dépôt Sud Lyon
         Entrepot entrepot2 = Entrepot.builder()
                 .nom("Dépôt Sud Lyon")
                 .adresse("8 Avenue Industrielle, 69007 Lyon")
@@ -101,8 +98,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Zone Réception A")
                 .type(TypeZone.RECEPTION)
                 .description("Zone de déchargement Nord — quais 1 à 4")
-                .capaciteTotale(500.0)
-                .capaciteUtilisee(120.0)
                 .entrepot(entrepot1)
                 .actif(true)
                 .build());
@@ -111,8 +106,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Allée Stockage B1")
                 .type(TypeZone.STOCKAGE)
                 .description("Rayonnages haute densité — produits secs")
-                .capaciteTotale(3000.0)
-                .capaciteUtilisee(1800.0)
                 .entrepot(entrepot1)
                 .actif(true)
                 .build());
@@ -121,8 +114,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Allée Stockage B2")
                 .type(TypeZone.STOCKAGE)
                 .description("Rayonnages — produits réfrigérés (2–8°C)")
-                .capaciteTotale(800.0)
-                .capaciteUtilisee(230.0)
                 .entrepot(entrepot1)
                 .actif(true)
                 .build());
@@ -131,8 +122,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Zone Expédition C")
                 .type(TypeZone.EXPEDITION)
                 .description("Préparation et chargement des commandes — quais 5 à 8")
-                .capaciteTotale(700.0)
-                .capaciteUtilisee(0.0)
                 .entrepot(entrepot1)
                 .actif(true)
                 .build());
@@ -144,8 +133,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Réception Lyon")
                 .type(TypeZone.RECEPTION)
                 .description("Zone d'entrée des marchandises")
-                .capaciteTotale(200.0)
-                .capaciteUtilisee(50.0)
                 .entrepot(entrepot2)
                 .actif(true)
                 .build());
@@ -154,8 +141,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Stock Central Lyon")
                 .type(TypeZone.STOCKAGE)
                 .description("Stockage général")
-                .capaciteTotale(1600.0)
-                .capaciteUtilisee(250.0)
                 .entrepot(entrepot2)
                 .actif(true)
                 .build());
@@ -164,8 +149,6 @@ public class DataInitializer implements CommandLineRunner {
                 .nom("Expédition Lyon")
                 .type(TypeZone.EXPEDITION)
                 .description("Zone de départ des commandes")
-                .capaciteTotale(200.0)
-                .capaciteUtilisee(0.0)
                 .entrepot(entrepot2)
                 .actif(true)
                 .build());

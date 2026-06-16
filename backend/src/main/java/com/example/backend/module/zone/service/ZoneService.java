@@ -18,11 +18,9 @@ import java.util.List;
  * Contient la logique métier des zones :
  *   - Vérification que la zone appartient à un entrepôt actif
  *   - Unicité du nom au sein d'un même entrepôt
- *   - Cohérence des capacités zone vs entrepôt
- *   - Calcul et mise à jour de la capacité utilisée de l'entrepôt parent
  *
- * La mise à jour de capaciteUtilisee sur l'entrepôt lors des mouvements
- * de stock sera gérée dans le module mouvements (futur).
+ * Les capacités (totale/utilisée) sont portées par l'entrepôt.
+ * La mise à jour lors des mouvements de stock sera gérée dans le module mouvements.
  */
 @Service
 @RequiredArgsConstructor
@@ -51,7 +49,6 @@ public class ZoneService {
      * @throws RuntimeException si l'entrepôt n'existe pas
      */
     public List<ZoneResponseDTO> findByEntrepot(Long entrepotId) {
-        // On vérifie que l'entrepôt existe avant de chercher ses zones
         findEntrepotOrThrow(entrepotId);
         return zoneRepository.findByEntrepotId(entrepotId)
                 .stream()
@@ -77,9 +74,6 @@ public class ZoneService {
      * Règles métier vérifiées :
      *   1. L'entrepôt doit exister et être actif
      *   2. Le nom de la zone doit être unique dans cet entrepôt
-     *   3. La capacité utilisée ne peut pas dépasser la capacité totale de la zone
-     *   4. La somme des capacités des zones ne doit pas dépasser l'entrepôt
-     *      (vérification optionnelle — activable selon besoin)
      *
      * @param dto Les données de la zone à créer
      * @return DTO de la zone créée
@@ -103,21 +97,10 @@ public class ZoneService {
             );
         }
 
-        // Règle 3 : cohérence des capacités de la zone
-        double utilise = dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0;
-        if (utilise > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m²) ne peut pas dépasser "
-                + "la capacité totale de la zone (" + dto.getCapaciteTotale() + " m²)"
-            );
-        }
-
         Zone zone = Zone.builder()
                 .nom(dto.getNom())
                 .type(dto.getType())
                 .description(dto.getDescription())
-                .capaciteTotale(dto.getCapaciteTotale())
-                .capaciteUtilisee(utilise)
                 .entrepot(entrepot)
                 .actif(true)
                 .build();
@@ -132,8 +115,7 @@ public class ZoneService {
      * Règles métier vérifiées :
      *   1. La zone doit exister
      *   2. Si le nom change, le nouveau nom ne doit pas être pris dans le même entrepôt
-     *   3. La capacité utilisée ne peut pas dépasser la nouvelle capacité totale
-     *   4. Si l'entrepôt change, le nouvel entrepôt doit exister et être actif
+     *   3. Si l'entrepôt change, le nouvel entrepôt doit exister et être actif
      *
      * @param id  Identifiant de la zone à modifier
      * @param dto Nouvelles données
@@ -144,7 +126,7 @@ public class ZoneService {
         Zone zone = findZoneOrThrow(id);
         Entrepot entrepot = findEntrepotOrThrow(dto.getEntrepotId());
 
-        // Règle 4 : si on change d'entrepôt, le nouvel entrepôt doit être actif
+        // Règle 3 : si on change d'entrepôt, le nouvel entrepôt doit être actif
         if (!entrepot.isActif()) {
             throw new RuntimeException(
                 "L'entrepôt cible \"" + entrepot.getNom() + "\" est désactivé"
@@ -160,24 +142,9 @@ public class ZoneService {
             );
         }
 
-        // Règle 3 : cohérence des capacités
-        double utilise = dto.getCapaciteUtilisee() != null
-                ? dto.getCapaciteUtilisee()
-                : zone.getCapaciteUtilisee();
-
-        if (utilise > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m²) ne peut pas dépasser "
-                + "la capacité totale (" + dto.getCapaciteTotale() + " m²)"
-            );
-        }
-
-        // Mise à jour des champs
         zone.setNom(dto.getNom());
         zone.setType(dto.getType());
         zone.setDescription(dto.getDescription());
-        zone.setCapaciteTotale(dto.getCapaciteTotale());
-        zone.setCapaciteUtilisee(utilise);
         zone.setEntrepot(entrepot);
 
         Zone saved = zoneRepository.save(zone);
@@ -196,29 +163,20 @@ public class ZoneService {
     @Transactional
     public ZoneResponseDTO toggleStatut(Long id) {
         Zone zone = findZoneOrThrow(id);
-
-        // Inverse l'état actuel
         zone.setActif(!zone.isActif());
-
         Zone saved = zoneRepository.save(zone);
         return ZoneResponseDTO.fromEntity(saved);
     }
 
     // -------------------------------------------------------
-    // MÉTHODES PRIVÉES — Helpers internes du service
+    // MÉTHODES PRIVÉES
     // -------------------------------------------------------
 
-    /**
-     * Cherche une zone par son ID ou lance une exception explicite.
-     */
     private Zone findZoneOrThrow(Long id) {
         return zoneRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Zone introuvable : id=" + id));
     }
 
-    /**
-     * Cherche un entrepôt par son ID ou lance une exception explicite.
-     */
     private Entrepot findEntrepotOrThrow(Long id) {
         return entrepotRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entrepôt introuvable : id=" + id));
