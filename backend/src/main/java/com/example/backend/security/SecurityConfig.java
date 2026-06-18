@@ -70,6 +70,45 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Routes publiques (pas besoin d'être connecté)
                 .requestMatchers("/api/auth/**").permitAll()
+
+                // --- Changer son propre mot de passe + profil : tous les utilisateurs connectés ---
+                .requestMatchers("/api/utilisateurs/*/changer-mot-de-passe").authenticated()
+                .requestMatchers("/api/utilisateurs/profil/**").authenticated()
+
+                // --- Utilisateurs : ADMIN uniquement ---
+                .requestMatchers("/api/utilisateurs/**").hasRole("ADMIN")
+
+                // --- Entrepôts / Zones : ADMIN + GESTIONNAIRE ---
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/entrepots/**", "/api/zones/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                .requestMatchers("/api/entrepots/**", "/api/zones/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+
+                // --- Produits / Catégories / Fournisseurs : ADMIN + GESTIONNAIRE ---
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/produits/**", "/api/categories/**", "/api/fournisseurs/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                .requestMatchers("/api/produits/**", "/api/categories/**", "/api/fournisseurs/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+
+                // --- Entrées / Sorties / Transferts : ADMIN + GESTIONNAIRE + MAGASINIER ---
+                .requestMatchers("/api/entrees/**", "/api/sorties/**", "/api/transferts/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
+
+                // --- Inventaires : ADMIN + GESTIONNAIRE + MAGASINIER ---
+                .requestMatchers("/api/inventaires/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
+
+                // --- Commandes : ADMIN + GESTIONNAIRE ---
+                .requestMatchers("/api/commandes/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+
+                // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
+                .requestMatchers("/api/stocks/**", "/api/alertes/**",
+                        "/api/rapports/**", "/api/emplacements/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+
                 // Toutes les autres routes nécessitent d'être authentifié
                 .anyRequest().authenticated()
             )

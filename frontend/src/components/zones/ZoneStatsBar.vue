@@ -1,78 +1,79 @@
 <script setup>
-// ============================================================
-// COMPOSANT : ZoneStatsBar
-//
-// Affiche les 3 cartes de métriques globales en haut de la
-// page zones. Les métriques sont calculées sur les zones
-// filtrées (pas le total absolu) pour refléter la sélection.
-//
-// Props :
-//   zones → tableau des zones actuellement affichées (filtrées)
-// ============================================================
-
 import { computed } from 'vue'
 
 const props = defineProps({
-  /** Zones actuellement affichées après filtrage */
-  zones: {
-    type: Array,
-    required: true,
-  },
-  /** Total absolu de zones (avant filtrage) — pour l'info contextuelle */
-  totalAbsolu: {
-    type: Number,
-    default: 0,
-  },
+  zones:       { type: Array,  required: true },
+  totalAbsolu: { type: Number, default: 0 },
 })
 
-// -------------------------------------------------------
-// MÉTRIQUES
-// -------------------------------------------------------
-
-const totalZones = computed(() => props.zones.length)
-
+const totalZones   = computed(() => props.zones.length)
 const totalActives = computed(() => props.zones.filter(z => z.actif).length)
+const totalInactives = computed(() => totalZones.value - totalActives.value)
 
-/** Taux d'occupation moyen (moyenne simple des taux de chaque zone) */
 const tauxMoyen = computed(() => {
   if (!totalZones.value) return 0
   const total = props.zones.reduce((acc, z) => acc + (z.tauxOccupation || 0), 0)
   return Math.round(total / totalZones.value)
 })
 
-function getCouleurTaux(taux) {
-  if (taux >= 85) return 'text-red-600'
-  if (taux >= 60) return 'text-orange-500'
-  return 'text-green-600'
-}
+const kpis = computed(() => [
+  {
+    label:      'Zones affichées',
+    value:      totalZones.value,
+    sub:        props.totalAbsolu && props.totalAbsolu !== totalZones.value
+                  ? `sur ${props.totalAbsolu} au total`
+                  : `${totalActives.value} active${totalActives.value > 1 ? 's' : ''}`,
+    color:      'bg-blue-600',
+    subColor:   'text-gray-400',
+    valueColor: 'text-gray-900',
+    icon:       'M4 5a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4zm10 0a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z',
+  },
+  {
+    label:      'Zones actives',
+    value:      totalActives.value,
+    sub:        `${totalInactives.value} inactive${totalInactives.value > 1 ? 's' : ''}`,
+    color:      'bg-green-600',
+    subColor:   'text-gray-400',
+    valueColor: 'text-green-600',
+    icon:       'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+  },
+  {
+    label:      "Taux d'occupation moyen",
+    value:      tauxMoyen.value + ' %',
+    sub:        tauxMoyen.value >= 85 ? 'Saturation critique'
+                : tauxMoyen.value >= 60 ? 'Charge élevée'
+                : 'Capacité disponible',
+    color:      tauxMoyen.value >= 85 ? 'bg-red-600'
+                : tauxMoyen.value >= 60 ? 'bg-orange-500'
+                : 'bg-green-600',
+    subColor:   tauxMoyen.value >= 85 ? 'text-red-500'
+                : tauxMoyen.value >= 60 ? 'text-orange-400'
+                : 'text-green-500',
+    valueColor: tauxMoyen.value >= 85 ? 'text-red-600'
+                : tauxMoyen.value >= 60 ? 'text-orange-500'
+                : 'text-green-600',
+    icon:       'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
+  },
+])
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-
-    <!-- Zones affichées -->
-    <div class="card p-5">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Zones affichées</p>
-      <p class="text-3xl font-bold text-gray-900 mt-1">{{ totalZones }}</p>
-      <!-- Sous-titre si filtre actif -->
-      <p v-if="totalAbsolu && totalAbsolu !== totalZones" class="text-xs text-gray-400 mt-1">
-        sur {{ totalAbsolu }} au total
-      </p>
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+    <div
+      v-for="kpi in kpis"
+      :key="kpi.label"
+      class="card p-3 md:p-5 flex items-start gap-3 md:gap-4 hover:shadow-md transition-shadow duration-200"
+    >
+      <div :class="['w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0', kpi.color]">
+        <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="kpi.icon"/>
+        </svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p :class="['text-xl md:text-2xl font-bold', kpi.valueColor]">{{ kpi.value }}</p>
+        <p class="text-xs md:text-sm text-gray-500 leading-snug">{{ kpi.label }}</p>
+        <p :class="['text-xs mt-1 font-medium', kpi.subColor]">{{ kpi.sub }}</p>
+      </div>
     </div>
-
-    <!-- Zones actives dans la sélection -->
-    <div class="card p-5">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Zones actives</p>
-      <p class="text-3xl font-bold text-green-600 mt-1">{{ totalActives }}</p>
-    </div>
-
-    <!-- Taux d'occupation moyen -->
-    <div class="card p-5">
-      <p class="text-xs font-medium text-gray-500 uppercase tracking-wide">Taux d'occupation moyen</p>
-      <p :class="['text-3xl font-bold mt-1', getCouleurTaux(tauxMoyen)]">
-        {{ tauxMoyen }} %
-      </p>
-    </div>
-
   </div>
 </template>

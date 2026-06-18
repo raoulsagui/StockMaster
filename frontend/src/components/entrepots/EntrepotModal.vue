@@ -151,9 +151,6 @@ const soumettre = async () => {
               <h2 class="text-lg font-semibold text-gray-900">
                 {{ isEditing ? "Modifier l'entrepôt" : 'Nouvel entrepôt' }}
               </h2>
-              <p class="text-sm text-gray-400 mt-0.5">
-                {{ isEditing ? 'Modifiez les informations ci-dessous.' : 'Remplissez le formulaire pour créer un entrepôt.' }}
-              </p>
             </div>
             <button
               @click="emit('fermer')"

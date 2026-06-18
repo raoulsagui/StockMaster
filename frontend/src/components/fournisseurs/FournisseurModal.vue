@@ -146,9 +146,6 @@ const soumettre = async () => {
               <h2 class="text-lg font-semibold text-gray-900">
                 {{ isEditing ? 'Modifier le fournisseur' : 'Nouveau fournisseur' }}
               </h2>
-              <p class="text-sm text-gray-400 mt-0.5">
-                {{ isEditing ? 'Modifiez les informations ci-dessous.' : 'Remplissez le formulaire pour ajouter un fournisseur.' }}
-              </p>
             </div>
             <button
               @click="emit('fermer')"
@@ -196,7 +193,7 @@ const soumettre = async () => {
                 <label class="form-label">Téléphone <span class="text-red-500">*</span></label>
                 <input
                   v-model="form.telephone" type="tel"
-                  placeholder="Ex : +33 1 23 45 67 89"
+                  placeholder="Ex : +299 01 85 65 25 15"
                   :class="['form-input', erreurs.telephone ? 'border-red-400 focus:ring-red-400' : '']"
                 />
                 <p v-if="erreurs.telephone" class="form-error">{{ erreurs.telephone }}</p>
@@ -217,7 +214,7 @@ const soumettre = async () => {
               <label class="form-label">Contact principal <span class="text-red-500">*</span></label>
               <input
                 v-model="form.contactPrincipal" type="text"
-                placeholder="Ex : Jean Martin"
+                placeholder="Ex : Houéfa Houéfa"
                 :class="['form-input', erreurs.contactPrincipal ? 'border-red-400 focus:ring-red-400' : '']"
               />
               <p v-if="erreurs.contactPrincipal" class="form-error">{{ erreurs.contactPrincipal }}</p>

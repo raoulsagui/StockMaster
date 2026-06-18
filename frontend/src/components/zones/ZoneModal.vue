@@ -148,9 +148,6 @@ const soumettre = async () => {
               <h2 class="text-lg font-semibold text-gray-900">
                 {{ isEditing ? 'Modifier la zone' : 'Nouvelle zone' }}
               </h2>
-              <p class="text-sm text-gray-400 mt-0.5">
-                {{ isEditing ? 'Modifiez les informations ci-dessous.' : 'Créez une zone dans un entrepôt.' }}
-              </p>
             </div>
             <button
               @click="emit('fermer')"

@@ -24,33 +24,39 @@ const props = defineProps({
 })
 
 const menuItems = [
-  { section: null,             label: 'Tableau de bord', icon: 'dashboard',    to: 'tableau-de-bord' },
-  { section: 'Organisation',   label: 'Entrepôts',       icon: 'warehouse',    to: 'entrepots' },
-  { section: 'Organisation',   label: 'Zones',           icon: 'zones',        to: 'zones' },
-  { section: 'Organisation',   label: 'Emplacements',    icon: 'emplacements', to: 'emplacements' },
-  { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits' },
-  { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories' },
-  { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs' },
-  { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks' },
-  { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees' },
-  { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties' },
-  { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts' },
-  { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes' },
-  { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires' },
-  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes' },
-  { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports' },
-  { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs' },
+  { section: null,             label: 'Tableau de bord', icon: 'dashboard',    to: 'tableau-de-bord', roles: null },
+  { section: 'Organisation',   label: 'Entrepôts',       icon: 'warehouse',    to: 'entrepots',       roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Organisation',   label: 'Zones',           icon: 'zones',        to: 'zones',           roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Organisation',   label: 'Emplacements',    icon: 'emplacements', to: 'emplacements',    roles: ['ADMIN', 'GESTIONNAIRE'] },
+  { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs',    roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks',          roles: null },
+  { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+  { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+  { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+  { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes',       roles: ['ADMIN', 'GESTIONNAIRE'] },
+  { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires',     roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes',         roles: null },
+  { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports',        roles: null },
+  { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs',    roles: ['ADMIN'] },
 ]
+
+// Filtre les items selon le rôle de l'utilisateur connecté
+const userRole = authStore.role
+const menuItemsFiltres = computed(() =>
+  menuItems.filter(item => !item.roles || item.roles.includes(userRole))
+)
 
 const sections = computed(() => {
   const seen = new Set()
-  return menuItems
+  return menuItemsFiltres.value
     .filter(i => i.section && !seen.has(i.section) && seen.add(i.section))
     .map(i => i.section)
 })
 
-const getItemsBySection = (section) => menuItems.filter(i => i.section === section)
-const topItems = computed(() => menuItems.filter(i => !i.section))
+const getItemsBySection = (section) => menuItemsFiltres.value.filter(i => i.section === section)
+const topItems = computed(() => menuItemsFiltres.value.filter(i => !i.section))
 const isActive = (name) => {
   if (name === 'stocks') {
     return ['stocks', 'entrees', 'sorties', 'transferts'].includes(route.name)
