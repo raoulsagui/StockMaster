@@ -30,13 +30,13 @@ public class ProduitController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<ProduitResponseDTO> creer(@Valid @RequestBody ProduitRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(produitService.creer(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<ProduitResponseDTO> modifier(@PathVariable Long id, @Valid @RequestBody ProduitRequestDTO dto) {
         return ResponseEntity.ok(produitService.modifier(id, dto));
     }

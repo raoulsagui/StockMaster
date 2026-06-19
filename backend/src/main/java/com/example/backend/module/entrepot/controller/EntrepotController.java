@@ -83,7 +83,7 @@ public class EntrepotController {
      * Retourne 201 Created si succès, 400 si données invalides, 409 si nom dupliqué.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> creer(@Valid @RequestBody EntrepotRequestDTO dto) {
         try {
             EntrepotResponseDTO created = entrepotService.creer(dto);
@@ -102,7 +102,7 @@ public class EntrepotController {
      * Retourne 200 OK si succès, 404 si non trouvé, 409 si conflit.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> modifier(
             @PathVariable Long id,
             @Valid @RequestBody EntrepotRequestDTO dto
@@ -123,7 +123,7 @@ public class EntrepotController {
      * Retourne 200 OK avec le nouvel état de l'entrepôt.
      */
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
     public ResponseEntity<?> toggleStatut(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(entrepotService.toggleStatut(id));

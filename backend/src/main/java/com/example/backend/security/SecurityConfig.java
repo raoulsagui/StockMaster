@@ -75,38 +75,59 @@ public class SecurityConfig {
                 .requestMatchers("/api/utilisateurs/*/changer-mot-de-passe").authenticated()
                 .requestMatchers("/api/utilisateurs/profil/**").authenticated()
 
-                // --- Utilisateurs : ADMIN uniquement ---
+                // --- Utilisateurs : ADMIN uniquement (création, modif, toggle statut, reset mdp) ---
                 .requestMatchers("/api/utilisateurs/**").hasRole("ADMIN")
 
-                // --- Entrepôts / Zones : ADMIN + GESTIONNAIRE ---
+                // --- Entrepôts / Zones ---
+                // Lecture : tous les rôles authentifiés
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                         "/api/entrepots/**", "/api/zones/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                // Écriture (création, modif) : ADMIN + GESTIONNAIRE + MAGASINIER
+                // Désactivation (PATCH statut) : ADMIN + GESTIONNAIRE (géré au niveau du controller)
                 .requestMatchers("/api/entrepots/**", "/api/zones/**")
-                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
-                // --- Produits / Catégories / Fournisseurs : ADMIN + GESTIONNAIRE ---
+                // --- Produits / Catégories / Fournisseurs ---
+                // Lecture : tous les rôles authentifiés
                 .requestMatchers(org.springframework.http.HttpMethod.GET,
                         "/api/produits/**", "/api/categories/**", "/api/fournisseurs/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                // Écriture (création, modif) : ADMIN + GESTIONNAIRE + MAGASINIER
+                // Suppression / toggle statut : ADMIN + GESTIONNAIRE (géré au niveau du controller)
                 .requestMatchers("/api/produits/**", "/api/categories/**", "/api/fournisseurs/**")
-                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
                 // --- Entrées / Sorties / Transferts : ADMIN + GESTIONNAIRE + MAGASINIER ---
                 .requestMatchers("/api/entrees/**", "/api/sorties/**", "/api/transferts/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
                 // --- Inventaires : ADMIN + GESTIONNAIRE + MAGASINIER ---
+                // Lecture : tous les rôles
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/inventaires/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                // Écriture (création, démarrage, saisie) : ADMIN + GESTIONNAIRE + MAGASINIER
+                // Validation / annulation : ADMIN + GESTIONNAIRE (géré au niveau du controller)
                 .requestMatchers("/api/inventaires/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
-                // --- Commandes : ADMIN + GESTIONNAIRE ---
+                // --- Commandes fournisseur ---
+                // Lecture : tous les rôles authentifiés
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/commandes/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                // Écriture (création, modif, réception) : ADMIN + GESTIONNAIRE + MAGASINIER
+                // Validation / annulation : ADMIN + GESTIONNAIRE (géré au niveau du controller)
                 .requestMatchers("/api/commandes/**")
-                        .hasAnyRole("ADMIN", "GESTIONNAIRE")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
-                // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
-                .requestMatchers("/api/stocks/**", "/api/alertes/**",
-                        "/api/rapports/**", "/api/emplacements/**")
+                // --- Emplacements : ADMIN + GESTIONNAIRE + MAGASINIER ---
+                .requestMatchers("/api/emplacements/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
+
+                // --- Stocks / Alertes / Rapports : tous les rôles authentifiés ---
+                .requestMatchers("/api/stocks/**", "/api/alertes/**", "/api/rapports/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
 
                 // Toutes les autres routes nécessitent d'être authentifié

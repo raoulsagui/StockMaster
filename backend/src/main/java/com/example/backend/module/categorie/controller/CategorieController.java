@@ -30,13 +30,13 @@ public class CategorieController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<CategorieResponseDTO> creer(@Valid @RequestBody CategorieRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categorieService.creer(dto));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<CategorieResponseDTO> modifier(@PathVariable Long id, @Valid @RequestBody CategorieRequestDTO dto) {
         return ResponseEntity.ok(categorieService.modifier(id, dto));
     }

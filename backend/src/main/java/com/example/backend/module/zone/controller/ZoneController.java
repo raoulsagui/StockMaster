@@ -78,7 +78,7 @@ public class ZoneController {
      * Accès : ADMIN ou GESTIONNAIRE.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> creer(@Valid @RequestBody ZoneRequestDTO dto) {
         try {
             ZoneResponseDTO created = zoneService.creer(dto);
@@ -94,7 +94,7 @@ public class ZoneController {
      * Accès : ADMIN ou GESTIONNAIRE.
      */
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> modifier(
             @PathVariable Long id,
             @Valid @RequestBody ZoneRequestDTO dto
@@ -112,7 +112,7 @@ public class ZoneController {
      * Accès : ADMIN uniquement.
      */
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
     public ResponseEntity<?> toggleStatut(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(zoneService.toggleStatut(id));

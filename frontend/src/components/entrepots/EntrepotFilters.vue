@@ -23,7 +23,7 @@ const statut    = defineModel('statut',    { type: String, default: '' })
     <div class="flex flex-col sm:flex-row gap-3">
 
       <!-- Recherche texte (nom ou adresse) -->
-      <div class="relative flex-1">
+      <div class="relative flex-1 relative">
         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

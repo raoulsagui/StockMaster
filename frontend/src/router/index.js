@@ -62,7 +62,7 @@ const router = createRouter({
     },
 
     // -------------------------------------------------------
-    // MODULE 2 : Entrepôts — ADMIN + GESTIONNAIRE
+    // MODULE 2 : Entrepôts
     // -------------------------------------------------------
     {
       path: '/entrepots',
@@ -74,18 +74,18 @@ const router = createRouter({
       path: '/entrepots/creer',
       name: 'entrepots-creer',
       component: () => import('@/views/entrepots/EntrepotFormView.vue'),
-      meta: { title: 'Nouvel entrepôt', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Nouvel entrepôt', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
     {
       path: '/entrepots/:id/modifier',
       name: 'entrepots-modifier',
       component: () => import('@/views/entrepots/EntrepotFormView.vue'),
       props: true,
-      meta: { title: 'Modifier un entrepôt', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Modifier un entrepôt', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
 
     // -------------------------------------------------------
-    // MODULE 3 : Zones — ADMIN + GESTIONNAIRE
+    // MODULE 3 : Zones
     // -------------------------------------------------------
     {
       path: '/zones',
@@ -97,14 +97,14 @@ const router = createRouter({
       path: '/zones/creer',
       name: 'zones-creer',
       component: () => import('@/views/zones/ZoneFormView.vue'),
-      meta: { title: 'Nouvelle zone', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Nouvelle zone', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
     {
       path: '/zones/:id/modifier',
       name: 'zones-modifier',
       component: () => import('@/views/zones/ZoneFormView.vue'),
       props: true,
-      meta: { title: 'Modifier une zone', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Modifier une zone', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
 
     // -------------------------------------------------------
@@ -186,6 +186,13 @@ const router = createRouter({
       component: () => import('@/views/inventaires/InventairesView.vue'),
       meta: { title: 'Inventaires', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
+    {
+      path: '/inventaires/:id',
+      name: 'inventaire-detail',
+      component: () => import('@/views/inventaires/InventaireDetailView.vue'),
+      props: true,
+      meta: { title: 'Détail inventaire', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+    },
 
     // -------------------------------------------------------
     // MODULE 12 : Alertes — tous les rôles
@@ -208,23 +215,30 @@ const router = createRouter({
     },
 
     // -------------------------------------------------------
-    // Emplacements — ADMIN + GESTIONNAIRE
+    // Emplacements — ADMIN + GESTIONNAIRE + MAGASINIER
     // -------------------------------------------------------
     {
       path: '/emplacements',
       name: 'emplacements',
       component: () => import('@/views/emplacements/EmplacementsView.vue'),
-      meta: { title: 'Emplacements', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Emplacements', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
     },
 
     // -------------------------------------------------------
-    // Commandes — ADMIN + GESTIONNAIRE
+    // Commandes — ADMIN + GESTIONNAIRE + MAGASINIER
     // -------------------------------------------------------
     {
       path: '/commandes',
       name: 'commandes',
       component: () => import('@/views/commandes/CommandesView.vue'),
-      meta: { title: 'Commandes', roles: ['ADMIN', 'GESTIONNAIRE'] },
+      meta: { title: 'Commandes', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+    },
+    {
+      path: '/commandes/:id',
+      name: 'commande-detail',
+      component: () => import('@/views/commandes/CommandeDetailView.vue'),
+      props: true,
+      meta: { title: 'Détail commande', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
     },
   ],
 })

@@ -49,7 +49,7 @@ public class FournisseurController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> creer(@Valid @RequestBody FournisseurRequestDTO dto) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(fournisseurService.creer(dto));
@@ -59,7 +59,7 @@ public class FournisseurController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE', 'MAGASINIER')")
     public ResponseEntity<?> modifier(@PathVariable Long id, @Valid @RequestBody FournisseurRequestDTO dto) {
         try {
             return ResponseEntity.ok(fournisseurService.modifier(id, dto));
@@ -69,7 +69,7 @@ public class FournisseurController {
     }
 
     @PatchMapping("/{id}/statut")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'GESTIONNAIRE')")
     public ResponseEntity<?> toggleStatut(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(fournisseurService.toggleStatut(id));
