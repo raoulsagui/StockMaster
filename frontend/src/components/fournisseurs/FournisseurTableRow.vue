@@ -10,6 +10,7 @@
 
 defineProps({
   fournisseur: { type: Object, required: true },
+  peutModifier: { type: Boolean, default: false },
 })
 
 const emit = defineEmits(['modifier', 'toggle'])
@@ -84,6 +85,7 @@ const emit = defineEmits(['modifier', 'toggle'])
 
         <!-- Modifier -->
         <button
+          v-if="peutModifier"
           @click="emit('modifier', fournisseur.id)"
           class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           title="Modifier ce fournisseur"
@@ -96,7 +98,8 @@ const emit = defineEmits(['modifier', 'toggle'])
 
         <!-- Activer / Désactiver -->
         <button
-          @click="emit('toggle', fournisseur)"
+          v-if="peutModifier"
+          @click="emit('toggle', fournisseur)""
           :class="[
             'p-1.5 rounded-lg transition-colors',
             fournisseur.actif

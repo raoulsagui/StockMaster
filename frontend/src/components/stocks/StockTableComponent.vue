@@ -7,12 +7,13 @@
 // ============================================================
 
 defineProps({
-  stocks:       { type: Array,   required: true },
-  isLoading:    { type: Boolean, default: false },
-  pageCourante: { type: Number,  required: true },
-  totalPages:   { type: Number,  required: true },
-  parPage:      { type: Number,  required: true },
-  totalFiltres: { type: Number,  required: true },
+  stocks:               { type: Array,   required: true },
+  isLoading:            { type: Boolean, default: false },
+  pageCourante:         { type: Number,  required: true },
+  totalPages:           { type: Number,  required: true },
+  parPage:              { type: Number,  required: true },
+  totalFiltres:         { type: Number,  required: true },
+  peutConfigurerSeuils: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -149,6 +150,7 @@ const emit = defineEmits([
 
                 <!-- Configurer les seuils min/max -->
                 <button
+                  v-if="peutConfigurerSeuils"
                   @click="emit('configurer-seuils', s)"
                   class="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                   title="Configurer les seuils"

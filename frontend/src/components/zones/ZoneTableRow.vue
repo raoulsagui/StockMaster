@@ -19,6 +19,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  peutModifier: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['modifier', 'toggle'])
@@ -127,6 +131,7 @@ function formatCapacite(val) {
 
         <!-- Modifier -->
         <button
+          v-if="peutModifier"
           @click="emit('modifier', zone.id)"
           class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           title="Modifier cette zone"
@@ -139,7 +144,8 @@ function formatCapacite(val) {
 
         <!-- Activer / Désactiver -->
         <button
-          @click="emit('toggle', zone)"
+          v-if="peutModifier"
+          @click="emit('toggle', zone)""
           :class="[
             'p-1.5 rounded-lg transition-colors',
             zone.actif

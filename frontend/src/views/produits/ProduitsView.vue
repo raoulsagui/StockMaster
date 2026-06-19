@@ -19,10 +19,12 @@ import ProduitFiltresComponent                from '@/components/produits/Produi
 import ProduitFiltresMobileComponent          from '@/components/produits/ProduitFiltresMobileComponent.vue'
 import ProduitTableComponent                  from '@/components/produits/ProduitTableComponent.vue'
 import ProduitModalCrudComponent              from '@/components/produits/ProduitModalCrudComponent.vue'
+import { usePermissions }                     from '@/composables/usePermissions'
 
 // -------------------------------------------------------
 // DONNÉES
 // -------------------------------------------------------
+const { peutGererCatalogue } = usePermissions()
 const produits   = ref([])
 const categories = ref([])
 const isLoading  = ref(false)
@@ -195,7 +197,7 @@ async function toggleStatut(p) {
           <h1 class="text-2xl font-bold text-gray-900">Produits</h1>
           <p class="text-sm text-gray-500 mt-0.5">{{ produits.length }} produits enregistrés</p>
         </div>
-        <button @click="ouvrirCreer" class="btn-primary justify-center self-end sm:self-auto">
+        <button v-if="peutGererCatalogue" @click="ouvrirCreer" class="btn-primary justify-center self-end sm:self-auto">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -237,6 +239,7 @@ async function toggleStatut(p) {
         :totalPages="totalPages"
         :parPage="parPage"
         :totalFiltres="produitsFiltres.length"
+        :peut-modifier="peutGererCatalogue"
         @modifier="ouvrirModifier"
         @toggle-statut="toggleStatut"
         @page-precedente="pageCourante--"

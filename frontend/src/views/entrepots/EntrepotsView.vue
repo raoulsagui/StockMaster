@@ -7,8 +7,10 @@ import EntrepotFilters  from '@/components/entrepots/EntrepotFilters.vue'
 import EntrepotTableRow from '@/components/entrepots/EntrepotTableRow.vue'
 import EntrepotModal    from '@/components/entrepots/EntrepotModal.vue'
 import entrepotService  from '@/services/entrepotService'
+import { usePermissions } from '@/composables/usePermissions'
 
 const router = useRouter()
+const { peutGererEntrepots } = usePermissions()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -90,7 +92,7 @@ const toggleStatut = async (entrepot) => {
             {{ entrepots.length }} entrepôt{{ entrepots.length > 1 ? 's' : '' }} enregistré{{ entrepots.length > 1 ? 's' : '' }}
           </p>
         </div>
-        <button @click="ouvrirCreation" class="btn-primary">
+        <button v-if="peutGererEntrepots" @click="ouvrirCreation" class="btn-primary">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -142,6 +144,7 @@ const toggleStatut = async (entrepot) => {
                   v-for="entrepot in entrepotsFiltres"
                   :key="entrepot.id"
                   :entrepot="entrepot"
+                  :peut-modifier="peutGererEntrepots"
                   @voir-zones="voirZones"
                   @modifier="ouvrirEdition"
                   @toggle="toggleStatut"
