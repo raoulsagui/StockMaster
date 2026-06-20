@@ -13,8 +13,12 @@
 // ============================================================
 
 import { ref, computed, watch } from 'vue'
-import entrepotService   from '@/services/entrepotService'
+import entrepotService    from '@/services/entrepotService'
 import utilisateurService from '@/services/utilisateurService'
+import dashboardService   from '@/services/dashboardService'
+import { usePermissions } from '@/composables/usePermissions'
+
+const { estAdmin } = usePermissions()
 
 const props = defineProps({
   visible:    { type: Boolean, required: true },
@@ -36,10 +40,16 @@ const form = ref({
   responsableId:    null,
 })
 
-const utilisateurs = ref([])
+const utilisateurs  = ref([])
+const membresSelectionnes = ref([]) // IDs des membres cochés
 const erreurs      = ref({})
 const erreurApi    = ref('')
 const isLoading    = ref(false)
+
+// Filtre les utilisateurs éligibles comme membres (GESTIONNAIRE + MAGASINIER)
+const utilisateursMembres = computed(() =>
+  utilisateurs.value.filter(u => ['GESTIONNAIRE', 'MAGASINIER'].includes(u.role) && u.actif)
+)
 
 // Recharge les données chaque fois que le modal s'ouvre
 watch(() => props.visible, async (val) => {
@@ -61,11 +71,13 @@ watch(() => props.visible, async (val) => {
         capaciteUtilisee: data.capaciteUtilisee,
         responsableId:    data.responsable?.id ?? null,
       }
+      membresSelectionnes.value = data.membresIds ?? []
     } catch {
       erreurApi.value = "Impossible de charger cet entrepôt."
     }
   } else {
     form.value = { nom: '', adresse: '', capaciteTotale: '', capaciteUtilisee: 0, responsableId: null }
+    membresSelectionnes.value = []
   }
 })
 
@@ -113,8 +125,16 @@ const soumettre = async () => {
 
     if (isEditing.value) {
       await entrepotService.modifier(props.entrepotId, payload)
+      // Mise à jour des membres séparément (ADMIN uniquement)
+      if (estAdmin.value) {
+        await dashboardService.mettreAJourMembres(props.entrepotId, membresSelectionnes.value)
+      }
     } else {
-      await entrepotService.creer(payload)
+      const created = await entrepotService.creer(payload)
+      // Assigne les membres après création (ADMIN uniquement)
+      if (estAdmin.value && membresSelectionnes.value.length > 0) {
+        await dashboardService.mettreAJourMembres(created.id, membresSelectionnes.value)
+      }
     }
 
     emit('sauvegarde')
@@ -227,6 +247,35 @@ const soumettre = async () => {
                 </option>
               </select>
               <p class="text-xs text-gray-400 mt-1">Optionnel — peut être défini ultérieurement.</p>
+            </div>
+
+            <!-- Membres assignés (ADMIN uniquement) -->
+            <div v-if="estAdmin" class="border-t border-gray-100 pt-4">
+              <p class="form-label mb-2">Membres assignés</p>
+              <p class="text-xs text-gray-400 mb-3">
+                Ces utilisateurs verront cet entrepôt dans leur tableau de bord.
+              </p>
+              <div v-if="utilisateursMembres.length === 0" class="text-xs text-gray-400">
+                Aucun gestionnaire ou magasinier actif disponible.
+              </div>
+              <div v-else class="space-y-2 max-h-40 overflow-y-auto pr-1">
+                <label
+                  v-for="u in utilisateursMembres"
+                  :key="u.id"
+                  class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    :value="u.id"
+                    v-model="membresSelectionnes"
+                    class="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-700">{{ u.prenom }} {{ u.nom }}</p>
+                    <p class="text-xs text-gray-400">{{ u.role === 'GESTIONNAIRE' ? 'Gestionnaire' : 'Magasinier' }}</p>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <!-- Boutons -->

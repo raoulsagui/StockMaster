@@ -18,10 +18,12 @@ import UtilisateurFiltresComponent        from '@/components/utilisateurs/Utilis
 import UtilisateurFiltresMobileComponent  from '@/components/utilisateurs/UtilisateurFiltresMobileComponent.vue'
 import UtilisateurTableComponent          from '@/components/utilisateurs/UtilisateurTableComponent.vue'
 import UtilisateurModalCrudComponent      from '@/components/utilisateurs/UtilisateurModalCrudComponent.vue'
+import { useToast }                       from '@/composables/useToast'
 
 // -------------------------------------------------------
 // DONNÉES
 // -------------------------------------------------------
+const toast = useToast()
 const utilisateurs = ref([])
 const isLoading    = ref(false)
 const erreur       = ref('')
@@ -134,16 +136,16 @@ async function toggleStatut(u) {
     const updated = await utilisateurService.toggleStatut(u.id)
     u.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 
 async function reinitialiserMotDePasse(u) {
-  if (!confirm(`Réinitialiser le mot de passe de ${u.prenom} ${u.nom} ?`)) return
   try {
     await utilisateurService.reinitialiserMotDePasse(u.id)
+    toast.success(`Mot de passe de ${u.prenom} ${u.nom} réinitialisé. Un email a été envoyé.`)
   } catch {
-    alert('Erreur lors de la réinitialisation.')
+    toast.error('Erreur lors de la réinitialisation.')
   }
 }
 </script>

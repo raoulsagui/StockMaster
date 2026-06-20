@@ -32,6 +32,12 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     List<Stock> findByEntrepotId(Long entrepotId);
 
     /**
+     * Stocks sur une liste d'entrepôts.
+     * Utilisé par le tableau de bord des non-ADMIN.
+     */
+    List<Stock> findByEntrepotIdIn(List<Long> entrepotIds);
+
+    /**
      * Tous les stocks d'un produit donné (dans tous les entrepôts).
      * Utile pour voir la répartition d'un produit.
      */

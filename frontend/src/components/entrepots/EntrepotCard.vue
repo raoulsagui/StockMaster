@@ -31,6 +31,17 @@ defineProps({
 // Le parent écoute ces événements avec @voir-zones="...", etc.
 const emit = defineEmits(['voir-zones', 'modifier', 'toggle'])
 
+defineProps({
+  entrepot: {
+    type: Object,
+    required: true,
+  },
+  peutModifier: {
+    type: Boolean,
+    default: false,
+  },
+})
+
 // -------------------------------------------------------
 // HELPERS D'AFFICHAGE — Logique de couleurs selon le taux
 // -------------------------------------------------------
@@ -110,6 +121,7 @@ function formatCapacite(val) {
 
         <!-- Bouton : Modifier -->
         <button
+          v-if="peutModifier"
           @click="emit('modifier', entrepot.id)"
           class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           title="Modifier cet entrepôt"
@@ -122,7 +134,8 @@ function formatCapacite(val) {
 
         <!-- Bouton : Activer / Désactiver -->
         <button
-          @click="emit('toggle', entrepot)"
+          v-if="peutModifier"
+          @click="emit('toggle', entrepot)""
           :class="[
             'p-1.5 rounded-lg transition-colors',
             entrepot.actif

@@ -44,6 +44,12 @@ const stockService = {
     const response = await api.patch(`/stocks/${stockId}/seuils`, data)
     return response.data
   },
+
+  /** GET /api/stocks/mouvements/derniers?limit=5 — pour le tableau de bord */
+  async getDerniersMouvements(limit = 5) {
+    const response = await api.get('/stocks/mouvements/derniers', { params: { limit } })
+    return response.data
+  },
 }
 
 export default stockService

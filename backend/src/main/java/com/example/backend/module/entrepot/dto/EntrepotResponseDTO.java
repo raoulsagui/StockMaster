@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * DTO de réponse renvoyé au client pour un entrepôt.
@@ -52,6 +54,11 @@ public class EntrepotResponseDTO {
     private ResponsableDTO responsable;
 
     /**
+     * Liste des membres assignés à cet entrepôt.
+     */
+    private List<Long> membresIds;
+
+    /**
      * DTO interne léger représentant le responsable.
      * On n'expose que l'id et le nom complet — jamais le mot de passe ou l'email.
      */
@@ -93,6 +100,11 @@ public class EntrepotResponseDTO {
                                         + " " + entrepot.getResponsable().getNom())
                                 .build()
                         : null)
+                .membresIds(entrepot.getMembres() != null
+                        ? entrepot.getMembres().stream()
+                                .map(u -> u.getId())
+                                .collect(Collectors.toList())
+                        : List.of())
                 .build();
     }
 

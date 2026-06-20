@@ -122,12 +122,19 @@ public class SecurityConfig {
                 .requestMatchers("/api/commandes/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
+<<<<<<< HEAD
                 // --- Emplacements : ADMIN + GESTIONNAIRE + MAGASINIER ---
                 .requestMatchers("/api/emplacements/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
                 // --- Stocks / Alertes / Rapports : tous les rôles authentifiés ---
                 .requestMatchers("/api/stocks/**", "/api/alertes/**", "/api/rapports/**")
+=======
+                // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
+                .requestMatchers("/api/stocks/**", "/api/alertes/**",
+                        "/api/rapports/**", "/api/emplacements/**",
+                        "/api/dashboard/**")
+>>>>>>> origin/raoulbranch
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
 
                 // Toutes les autres routes nécessitent d'être authentifié

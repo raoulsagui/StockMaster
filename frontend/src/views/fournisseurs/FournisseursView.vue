@@ -16,6 +16,11 @@ import FournisseurFilters     from '@/components/fournisseurs/FournisseurFilters
 import FournisseurTableRow    from '@/components/fournisseurs/FournisseurTableRow.vue'
 import FournisseurModal       from '@/components/fournisseurs/FournisseurModal.vue'
 import fournisseurService     from '@/services/fournisseurService'
+import { usePermissions }     from '@/composables/usePermissions'
+import { useToast }           from '@/composables/useToast'
+
+const { peutGererFournisseurs } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -79,7 +84,7 @@ const toggleStatut = async (fournisseur) => {
     const updated = await fournisseurService.toggleStatut(fournisseur.id)
     fournisseur.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 </script>
@@ -96,7 +101,7 @@ const toggleStatut = async (fournisseur) => {
             {{ fournisseurs.length }} fournisseur{{ fournisseurs.length > 1 ? 's' : '' }} enregistré{{ fournisseurs.length > 1 ? 's' : '' }}
           </p>
         </div>
-        <button @click="ouvrirCreation" class="btn-primary">
+        <button v-if="peutGererFournisseurs" @click="ouvrirCreation" class="btn-primary">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -145,6 +150,7 @@ const toggleStatut = async (fournisseur) => {
                 v-for="fournisseur in fournisseursFiltres"
                 :key="fournisseur.id"
                 :fournisseur="fournisseur"
+                :peut-modifier="peutGererFournisseurs"
                 @modifier="ouvrirEdition"
                 @toggle="toggleStatut"
               />

@@ -1,130 +1,161 @@
 <script setup>
 // ============================================================
-// TABLEAU DE BORD — Page d'accueil de l'application
+// TABLEAU DE BORD
 //
-// Affiche les KPI principaux et un résumé des activités.
-// Pour l'instant les données sont statiques (mock).
-// Plus tard on les chargera depuis l'API Spring Boot.
-//
-// Ce composant utilise AppLayout pour avoir la sidebar et le header.
+// Les données sont filtrées côté backend selon le rôle :
+//   - ADMIN          → toutes les données (tous les entrepôts)
+//   - autres rôles   → uniquement leurs entrepôts assignés
 // ============================================================
 
-import { ref } from 'vue'
-import AppLayout from '@/layout/AppLayout.vue'
+import { ref, computed, onMounted } from 'vue'
+import AppLayout       from '@/layout/AppLayout.vue'
+import dashboardService from '@/services/dashboardService'
+import { useAuthStore } from '@/stores/authStore'
+
+const authStore = useAuthStore()
+const data      = ref(null)
+const isLoading = ref(false)
+
+onMounted(async () => {
+  isLoading.value = true
+  try {
+    data.value = await dashboardService.getDashboard()
+  } catch {
+    // non bloquant
+  } finally {
+    isLoading.value = false
+  }
+})
 
 // -------------------------------------------------------
-// DONNÉES MOCK — Simulent la réponse de l'API
-// On les remplacera par des appels au service API (Module 13)
+// KPI
 // -------------------------------------------------------
-const kpis = ref([
-  {
-    id: 1,
-    label: 'Entrepôts actifs',
-    value: '4',
-    change: '+1 ce mois',
-    changeType: 'positive', // positive | negative | neutral
-    icon: 'warehouse',
-    color: 'blue',
-  },
-  {
-    id: 2,
-    label: 'Produits en stock',
-    value: '1 284',
-    change: '+56 cette semaine',
-    changeType: 'positive',
-    icon: 'box',
-    color: 'green',
-  },
-  {
-    id: 3,
-    label: 'Produits critiques',
-    value: '12',
-    change: '3 en rupture',
-    changeType: 'negative',
-    icon: 'alert',
-    color: 'red',
-  },
-  {
-    id: 4,
-    label: 'Entrées du mois',
-    value: '342',
-    change: '+8% vs mois dernier',
-    changeType: 'positive',
-    icon: 'arrow-in',
-    color: 'indigo',
-  },
-  {
-    id: 5,
-    label: 'Sorties du mois',
-    value: '289',
-    change: '-3% vs mois dernier',
-    changeType: 'negative',
-    icon: 'arrow-out',
-    color: 'orange',
-  },
-  {
-    id: 6,
-    label: 'Utilisateurs actifs',
-    value: '8',
-    change: '2 admins',
-    changeType: 'neutral',
-    icon: 'users',
-    color: 'purple',
-  },
-])
+const kpis = computed(() => {
+  if (!data.value) return []
+  const d = data.value
+  const items = [
+    {
+      id: 1,
+      label: 'Entrepôts actifs',
+      value: d.entrepotsActifs,
+      sub: `${d.entrepotsTotal} au total`,
+      icon: 'warehouse',
+      color: 'blue',
+    },
+    {
+      id: 2,
+      label: 'Références en stock',
+      value: d.referencesEnStock,
+      sub: `${d.totalUnitesDispo.toLocaleString('fr-FR')} unités disponibles`,
+      icon: 'box',
+      color: 'green',
+    },
+    {
+      id: 3,
+      label: 'Stocks en alerte',
+      value: d.stocksEnAlerte,
+      sub: d.stocksEnAlerte > 0 ? 'Stocks faibles détectés' : 'Aucune alerte',
+      icon: 'alert',
+      color: d.stocksEnAlerte > 0 ? 'red' : 'gray',
+    },
+    {
+      id: 4,
+      label: 'Entrées du mois',
+      value: d.entreesduMois,
+      sub: 'Bons de réception validés',
+      icon: 'arrow-in',
+      color: 'indigo',
+    },
+    {
+      id: 5,
+      label: 'Sorties du mois',
+      value: d.sortiesDuMois,
+      sub: 'Bons de sortie validés',
+      icon: 'arrow-out',
+      color: 'orange',
+    },
+  ]
 
-// Derniers mouvements de stock (mock)
-const derniersMouvements = ref([
-  { id: 1, type: 'ENTRÉE',    produit: 'Laptop Dell XPS 15',    quantite: 20, entrepot: 'Entrepôt Paris',  date: '12/06/2026' },
-  { id: 2, type: 'SORTIE',    produit: 'Souris Logitech MX3',   quantite: 5,  entrepot: 'Entrepôt Lyon',   date: '12/06/2026' },
-  { id: 3, type: 'TRANSFERT', produit: 'Câble HDMI 2m',          quantite: 50, entrepot: 'Paris → Lyon',    date: '11/06/2026' },
-  { id: 4, type: 'ENTRÉE',    produit: 'Écran Samsung 27"',      quantite: 10, entrepot: 'Entrepôt Nantes', date: '11/06/2026' },
-  { id: 5, type: 'SORTIE',    produit: 'Clavier mécanique RGB',  quantite: 3,  entrepot: 'Entrepôt Paris',  date: '10/06/2026' },
-])
+  // KPI utilisateurs uniquement pour l'ADMIN
+  if (d.utilisateursActifs >= 0) {
+    items.push({
+      id: 6,
+      label: 'Utilisateurs actifs',
+      value: d.utilisateursActifs,
+      sub: 'Comptes actifs',
+      icon: 'users',
+      color: 'purple',
+    })
+  }
 
-// Alertes récentes (mock)
-const alertes = ref([
-  { id: 1, severity: 'danger',  message: 'Câble USB-C — Stock en rupture (Entrepôt Lyon)' },
-  { id: 2, severity: 'warning', message: 'Écran Samsung — Stock faible (3 restants)' },
-  { id: 3, severity: 'warning', message: 'Zone B Nantes — Capacité à 92%' },
-])
+  return items
+})
 
-// Mapping couleur → classes Tailwind pour les cartes KPI
+// -------------------------------------------------------
+// HELPERS
+// -------------------------------------------------------
 const colorMap = {
-  blue:   { icon: 'bg-blue-600'   },
-  green:  { icon: 'bg-green-600'  },
-  red:    { icon: 'bg-red-600'    },
-  indigo: { icon: 'bg-indigo-600' },
-  orange: { icon: 'bg-orange-500' },
-  purple: { icon: 'bg-purple-600' },
+  blue:   'bg-blue-600',
+  green:  'bg-green-600',
+  red:    'bg-red-600',
+  gray:   'bg-gray-400',
+  purple: 'bg-purple-600',
+  indigo: 'bg-indigo-600',
+  orange: 'bg-orange-500',
 }
+
+const typeConfig = {
+  ENTREE:           { label: 'Entrée',      class: 'bg-green-100 text-green-700'   },
+  SORTIE:           { label: 'Sortie',      class: 'bg-red-100 text-red-700'       },
+  TRANSFERT_SORTIE: { label: 'Transfert →', class: 'bg-blue-100 text-blue-700'     },
+  TRANSFERT_ENTREE: { label: '← Transfert', class: 'bg-blue-100 text-blue-700'     },
+  AJUSTEMENT:       { label: 'Ajustement',  class: 'bg-yellow-100 text-yellow-700' },
+}
+
+const getTypeConfig = (type) =>
+  typeConfig[type] ?? { label: type, class: 'bg-gray-100 text-gray-700' }
+
+const formatDate = (d) => d
+  ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
+  : '—'
+
+const today = new Date().toLocaleDateString('fr-FR', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+})
 </script>
 
 <template>
-  <!-- AppLayout enveloppe tout le contenu de la page -->
   <AppLayout>
     <div class="space-y-6">
 
-      <!-- ===== EN-TÊTE DE PAGE ===== -->
+      <!-- EN-TÊTE -->
       <div class="flex items-center justify-between">
         <div>
           <h1 class="hidden md:block text-2xl font-bold text-gray-900">Tableau de bord</h1>
           <p class="hidden md:block text-sm text-gray-500 mt-1">
-            Bienvenue, voici un aperçu de votre activité en temps réel.
+            Voici un aperçu de votre activité en temps réel.
+            <span v-if="data?.filtrePeriemtre"
+              class="ml-1 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+              Mes entrepôts
+            </span>
           </p>
         </div>
-        <span class="hidden sm:block text-sm text-gray-400">Vendredi 12 juin 2026</span>
+        <span class="hidden sm:block text-sm text-gray-400 capitalize">{{ today }}</span>
       </div>
 
-      <!-- ===== GRILLE DES KPI ===== -->
-      <div class="grid grid-cols-2 xl:grid-cols-3 gap-3 md:gap-4">
+      <!-- LOADING -->
+      <div v-if="isLoading" class="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
+        <div v-for="i in 4" :key="i" class="card p-5 h-24 animate-pulse bg-gray-50"/>
+      </div>
+
+      <!-- KPI -->
+      <div v-else class="grid grid-cols-2 xl:grid-cols-4 gap-3 md:gap-4">
         <div
           v-for="kpi in kpis"
           :key="kpi.id"
-          class="card p-3 md:p-6 flex items-start gap-3 md:gap-4 hover:shadow-md transition-shadow duration-200"
+          class="card p-3 md:p-5 flex items-start gap-3 md:gap-4 hover:shadow-md transition-shadow duration-200"
         >
-          <!-- Icône colorée -->
-          <div :class="['w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0', colorMap[kpi.color].icon]">
+          <div :class="['w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center flex-shrink-0', colorMap[kpi.color]]">
             <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path v-if="kpi.icon === 'warehouse'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -140,24 +171,29 @@ const colorMap = {
                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
             </svg>
           </div>
-
           <div class="flex-1 min-w-0">
             <p class="text-xl md:text-2xl font-bold text-gray-900">{{ kpi.value }}</p>
             <p class="text-xs md:text-sm text-gray-500 leading-snug">{{ kpi.label }}</p>
-            <p :class="[
-              'text-xs mt-1 font-medium leading-snug',
-              kpi.changeType === 'positive' ? 'text-green-600' :
-              kpi.changeType === 'negative' ? 'text-red-500' :
-              'text-gray-400'
-            ]">
-              {{ kpi.change }}
-            </p>
+            <p class="text-xs mt-1 text-gray-400 font-medium leading-snug">{{ kpi.sub }}</p>
           </div>
         </div>
       </div>
 
-      <!-- ===== MOUVEMENTS + ALERTES ===== -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- MESSAGE si aucun entrepôt assigné (non-ADMIN sans périmètre) -->
+      <div
+        v-if="!isLoading && data?.filtrePeriemtre && data?.entrepotsTotal === 0"
+        class="card p-8 text-center text-gray-400"
+      >
+        <svg class="w-10 h-10 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/>
+        </svg>
+        <p class="text-sm font-medium">Aucun entrepôt assigné</p>
+        <p class="text-xs mt-1">Contactez un administrateur pour être assigné à un entrepôt.</p>
+      </div>
+
+      <!-- MOUVEMENTS + ALERTES -->
+      <div v-else-if="!isLoading" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
         <!-- Derniers mouvements (2/3) -->
         <div class="card lg:col-span-2">
@@ -167,7 +203,13 @@ const colorMap = {
               Voir tout →
             </RouterLink>
           </div>
-          <div class="overflow-x-auto">
+
+          <div v-if="!data?.derniersMouvements?.length"
+            class="py-8 text-center text-gray-400 text-sm">
+            Aucun mouvement enregistré pour l'instant.
+          </div>
+
+          <div v-else class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="border-b border-gray-100">
@@ -179,49 +221,57 @@ const colorMap = {
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-50">
-                <tr v-for="mvt in derniersMouvements" :key="mvt.id" class="hover:bg-gray-50 transition-colors">
+                <tr v-for="mvt in data.derniersMouvements" :key="mvt.id"
+                  class="hover:bg-gray-50 transition-colors">
                   <td class="table-cell pl-0">
-                    <span :class="[
-                      'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                      mvt.type === 'ENTRÉE'    ? 'bg-green-100 text-green-700'  :
-                      mvt.type === 'SORTIE'    ? 'bg-red-100 text-red-700'      :
-                      'bg-blue-100 text-blue-700'
-                    ]">{{ mvt.type }}</span>
+                    <span :class="['inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                      getTypeConfig(mvt.type).class]">
+                      {{ getTypeConfig(mvt.type).label }}
+                    </span>
                   </td>
-                  <td class="table-cell font-medium text-gray-900">{{ mvt.produit }}</td>
-                  <td class="table-cell">{{ mvt.quantite }}</td>
-                  <td class="table-cell text-gray-500">{{ mvt.entrepot }}</td>
-                  <td class="table-cell text-gray-400">{{ mvt.date }}</td>
+                  <td class="table-cell font-medium text-gray-900">{{ mvt.produitNom }}</td>
+                  <td class="table-cell text-gray-600">{{ mvt.quantite }}</td>
+                  <td class="table-cell text-gray-500">{{ mvt.entrepotNom }}</td>
+                  <td class="table-cell text-gray-400">{{ formatDate(mvt.dateCreation) }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Alertes (1/3) -->
+        <!-- Stocks en alerte (1/3) -->
         <div class="card">
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-base font-semibold text-gray-900">Alertes</h3>
-            <RouterLink :to="{ name: 'alertes' }" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            <h3 class="text-base font-semibold text-gray-900">Stocks en alerte</h3>
+            <RouterLink :to="{ name: 'stocks' }" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
               Voir tout →
             </RouterLink>
           </div>
-          <div class="space-y-3">
+
+          <div v-if="!data?.alertesRecentes?.length"
+            class="py-8 text-center text-gray-400 text-sm">
+            Aucun stock en alerte.
+          </div>
+
+          <div v-else class="space-y-2">
             <div
-              v-for="alerte in alertes"
-              :key="alerte.id"
-              :class="['flex items-start gap-3 p-3 rounded-lg', alerte.severity === 'danger' ? 'bg-red-50' : 'bg-yellow-50']"
+              v-for="alerte in data.alertesRecentes"
+              :key="alerte.stockId"
+              class="flex items-start gap-3 p-3 rounded-lg bg-red-50"
             >
-              <svg
-                :class="['w-5 h-5 flex-shrink-0 mt-0.5', alerte.severity === 'danger' ? 'text-red-500' : 'text-yellow-500']"
-                fill="none" stroke="currentColor" viewBox="0 0 24 24"
-              >
+              <svg class="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
               </svg>
-              <p :class="['text-xs leading-snug', alerte.severity === 'danger' ? 'text-red-700' : 'text-yellow-700']">
-                {{ alerte.message }}
-              </p>
+              <div class="min-w-0">
+                <p class="text-xs font-medium text-red-800 truncate">{{ alerte.produitNom }}</p>
+                <p class="text-xs text-red-600 mt-0.5">
+                  {{ alerte.quantiteDisponible }} restant{{ alerte.quantiteDisponible > 1 ? 's' : '' }}
+                  <span v-if="alerte.stockMinimum"> (min : {{ alerte.stockMinimum }})</span>
+                  — {{ alerte.entrepotNom }}
+                </p>
+              </div>
             </div>
           </div>
         </div>

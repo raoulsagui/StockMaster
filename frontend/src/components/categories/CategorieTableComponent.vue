@@ -13,6 +13,7 @@ defineProps({
   totalPages:   { type: Number,  required: true },
   parPage:      { type: Number,  required: true },
   totalFiltres: { type: Number,  required: true },
+  peutModifier: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -59,6 +60,7 @@ const emit = defineEmits([
               <div class="flex items-center justify-end gap-1">
                 <!-- Modifier -->
                 <button
+                  v-if="peutModifier"
                   @click="emit('modifier', c)"
                   class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   title="Modifier"
@@ -70,6 +72,7 @@ const emit = defineEmits([
                 </button>
                 <!-- Supprimer -->
                 <button
+                  v-if="peutModifier"
                   @click="emit('supprimer', c)"
                   class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Supprimer"

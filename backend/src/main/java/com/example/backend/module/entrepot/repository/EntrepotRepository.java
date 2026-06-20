@@ -50,4 +50,18 @@ public interface EntrepotRepository extends JpaRepository<Entrepot, Long> {
      * @return liste des entrepôts dont actif = true
      */
     List<Entrepot> findByActifTrue();
+
+    /**
+     * Récupère tous les entrepôts dont l'utilisateur est membre.
+     * Utilisé pour filtrer le dashboard selon l'utilisateur connecté.
+     *
+     * @param utilisateurId L'id de l'utilisateur connecté
+     * @return liste des entrepôts auxquels il est assigné
+     */
+    List<Entrepot> findByMembresId(Long utilisateurId);
+
+    /**
+     * Récupère tous les entrepôts actifs dont l'utilisateur est membre.
+     */
+    List<Entrepot> findByMembresIdAndActifTrue(Long utilisateurId);
 }

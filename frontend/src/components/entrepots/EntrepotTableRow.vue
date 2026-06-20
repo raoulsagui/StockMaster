@@ -15,6 +15,10 @@ defineProps({
     type: Object,
     required: true,
   },
+  peutModifier: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const emit = defineEmits(['voir-zones', 'modifier', 'toggle'])
@@ -126,6 +130,7 @@ function formatCapacite(val) {
 
         <!-- Modifier -->
         <button
+          v-if="peutModifier"
           @click="emit('modifier', entrepot.id)"
           class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
           title="Modifier cet entrepôt"
@@ -138,7 +143,8 @@ function formatCapacite(val) {
 
         <!-- Activer / Désactiver -->
         <button
-          @click="emit('toggle', entrepot)"
+          v-if="peutModifier"
+          @click="emit('toggle', entrepot)""
           :class="[
             'p-1.5 rounded-lg transition-colors',
             entrepot.actif

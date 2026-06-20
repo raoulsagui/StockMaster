@@ -16,10 +16,12 @@ import stockService                from '@/services/stockService'
 import StockTableComponent         from '@/components/stocks/StockTableComponent.vue'
 import StockSeuilsModalComponent   from '@/components/stocks/StockSeuilsModalComponent.vue'
 import StockMouvementsComponent    from '@/components/stocks/StockMouvementsComponent.vue'
+import { usePermissions }          from '@/composables/usePermissions'
 
 // -------------------------------------------------------
 // DONNÉES
 // -------------------------------------------------------
+const { peutConfigurerSeuils } = usePermissions()
 const stocks    = ref([])
 const isLoading = ref(false)
 const erreur    = ref('')
@@ -324,6 +326,7 @@ async function soumettreSeuilsModal(payload) {
         :totalPages="totalPages"
         :parPage="parPage"
         :totalFiltres="stocksFiltres.length"
+        :peut-configurer-seuils="peutConfigurerSeuils"
         @voir-mouvements="ouvrirMouvements"
         @configurer-seuils="ouvrirSeuils"
         @page-precedente="pageCourante--"

@@ -13,6 +13,7 @@ defineProps({
   totalPages:   { type: Number,  required: true },
   parPage:      { type: Number,  required: true },
   totalFiltres: { type: Number,  required: true },
+  peutModifier: { type: Boolean, default: false },
 })
 
 const emit = defineEmits([
@@ -85,7 +86,7 @@ const formatPrix = (val) =>
             <td class="table-cell">
               <div class="flex items-center justify-end gap-1">
                 <!-- Modifier -->
-                <button @click="emit('modifier', p)"
+                <button v-if="peutModifier" @click="emit('modifier', p)"
                   class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                   title="Modifier">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,7 +95,7 @@ const formatPrix = (val) =>
                   </svg>
                 </button>
                 <!-- Toggle statut -->
-                <button @click="emit('toggle-statut', p)"
+                <button v-if="peutModifier" @click="emit('toggle-statut', p)"
                   :class="['p-1.5 rounded-lg transition-colors', p.actif
                     ? 'text-gray-400 hover:text-red-600 hover:bg-red-50'
                     : 'text-gray-400 hover:text-green-600 hover:bg-green-50']"
