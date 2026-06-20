@@ -51,6 +51,12 @@ public class DashboardDTO {
     /** Stocks en alerte pour affichage rapide (5 max) */
     private List<AlerteStock> alertesRecentes;
 
+    /** Données pour le graphique évolution du stock (30 derniers jours) */
+    private List<PointGraphique> evolutionStock;
+
+    /** Données pour le graphique rotation des produits (top 5) */
+    private List<RotationProduit> rotationProduits;
+
     /** true si les données sont filtrées par entrepôt (non-ADMIN) */
     private boolean filtrePeriemtre;
 
@@ -77,5 +83,22 @@ public class DashboardDTO {
         private String entrepotNom;
         private int    quantiteDisponible;
         private Integer stockMinimum;
+    }
+
+    /** Un point du graphique évolution : date + entrées + sorties */
+    @Data
+    @Builder
+    public static class PointGraphique {
+        private String date;    // "2026-06-01"
+        private long   entrees;
+        private long   sorties;
+    }
+
+    /** Un produit dans le graphique rotation */
+    @Data
+    @Builder
+    public static class RotationProduit {
+        private String produitNom;
+        private long   totalMouvements;
     }
 }
