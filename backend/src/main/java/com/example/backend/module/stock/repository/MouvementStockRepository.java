@@ -49,4 +49,29 @@ public interface MouvementStockRepository extends JpaRepository<MouvementStock, 
     Page<MouvementStock> findByEntrepotIdInOrderByDateCreationDesc(
         List<Long> entrepotIds, Pageable pageable
     );
+
+    /**
+     * Top N produits par volume de mouvements (toutes entités confondues).
+     * Retourne [produitNom, totalMouvements] trié DESC.
+     */
+    @Query("SELECT m.produit.nom, COUNT(m) as total FROM MouvementStock m " +
+           "WHERE m.type IN ('ENTREE', 'SORTIE') AND m.dateCreation >= :depuis " +
+           "GROUP BY m.produit.nom ORDER BY total DESC")
+    List<Object[]> findRotationProduits(
+        @Param("depuis") java.time.LocalDateTime depuis,
+        Pageable pageable
+    );
+
+    /**
+     * Top N produits pour un périmètre d'entrepôts.
+     */
+    @Query("SELECT m.produit.nom, COUNT(m) as total FROM MouvementStock m " +
+           "WHERE m.type IN ('ENTREE', 'SORTIE') AND m.dateCreation >= :depuis " +
+           "AND m.entrepot.id IN :entrepotIds " +
+           "GROUP BY m.produit.nom ORDER BY total DESC")
+    List<Object[]> findRotationProduitsParEntrepots(
+        @Param("depuis") java.time.LocalDateTime depuis,
+        @Param("entrepotIds") List<Long> entrepotIds,
+        Pageable pageable
+    );
 }

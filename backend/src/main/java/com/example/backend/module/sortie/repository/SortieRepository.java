@@ -37,4 +37,25 @@ public interface SortieRepository extends JpaRepository<Sortie, Long> {
         @Param("fin") LocalDateTime fin,
         @Param("entrepotIds") List<Long> entrepotIds
     );
+
+    /**
+     * Évolution quotidienne des sorties validées sur une période.
+     */
+    @Query("SELECT CAST(s.dateValidation AS date), COUNT(s) FROM Sortie s " +
+           "WHERE s.statut = 'VALIDE' AND s.dateValidation BETWEEN :debut AND :fin " +
+           "GROUP BY CAST(s.dateValidation AS date) ORDER BY CAST(s.dateValidation AS date)")
+    List<Object[]> findEvolutionQuotidienne(
+        @Param("debut") LocalDateTime debut,
+        @Param("fin") LocalDateTime fin
+    );
+
+    @Query("SELECT CAST(s.dateValidation AS date), COUNT(s) FROM Sortie s " +
+           "WHERE s.statut = 'VALIDE' AND s.dateValidation BETWEEN :debut AND :fin " +
+           "AND s.entrepot.id IN :entrepotIds " +
+           "GROUP BY CAST(s.dateValidation AS date) ORDER BY CAST(s.dateValidation AS date)")
+    List<Object[]> findEvolutionQuotidienneParEntrepots(
+        @Param("debut") LocalDateTime debut,
+        @Param("fin") LocalDateTime fin,
+        @Param("entrepotIds") List<Long> entrepotIds
+    );
 }

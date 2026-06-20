@@ -37,4 +37,26 @@ public interface EntreeRepository extends JpaRepository<Entree, Long> {
         @Param("fin") LocalDateTime fin,
         @Param("entrepotIds") List<Long> entrepotIds
     );
+
+    /**
+     * Évolution quotidienne des entrées validées sur une période.
+     * Retourne une liste de [date, count] pour le graphique.
+     */
+    @Query("SELECT CAST(e.dateValidation AS date), COUNT(e) FROM Entree e " +
+           "WHERE e.statut = 'VALIDE' AND e.dateValidation BETWEEN :debut AND :fin " +
+           "GROUP BY CAST(e.dateValidation AS date) ORDER BY CAST(e.dateValidation AS date)")
+    List<Object[]> findEvolutionQuotidienne(
+        @Param("debut") LocalDateTime debut,
+        @Param("fin") LocalDateTime fin
+    );
+
+    @Query("SELECT CAST(e.dateValidation AS date), COUNT(e) FROM Entree e " +
+           "WHERE e.statut = 'VALIDE' AND e.dateValidation BETWEEN :debut AND :fin " +
+           "AND e.entrepot.id IN :entrepotIds " +
+           "GROUP BY CAST(e.dateValidation AS date) ORDER BY CAST(e.dateValidation AS date)")
+    List<Object[]> findEvolutionQuotidienneParEntrepots(
+        @Param("debut") LocalDateTime debut,
+        @Param("fin") LocalDateTime fin,
+        @Param("entrepotIds") List<Long> entrepotIds
+    );
 }
