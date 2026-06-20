@@ -1,7 +1,7 @@
 package com.example.backend.security;
 
-import com.example.backend.security.UserDetailsServiceImpl;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +22,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Configuration centrale de Spring Security.
@@ -122,19 +122,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/commandes/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
-<<<<<<< HEAD
-                // --- Emplacements : ADMIN + GESTIONNAIRE + MAGASINIER ---
-                .requestMatchers("/api/emplacements/**")
-                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
-
-                // --- Stocks / Alertes / Rapports : tous les rôles authentifiés ---
-                .requestMatchers("/api/stocks/**", "/api/alertes/**", "/api/rapports/**")
-=======
                 // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
                 .requestMatchers("/api/stocks/**", "/api/alertes/**",
                         "/api/rapports/**", "/api/emplacements/**",
                         "/api/dashboard/**")
->>>>>>> origin/raoulbranch
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
 
                 // Toutes les autres routes nécessitent d'être authentifié
