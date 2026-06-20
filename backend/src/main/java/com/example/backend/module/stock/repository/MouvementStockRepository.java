@@ -41,4 +41,12 @@ public interface MouvementStockRepository extends JpaRepository<MouvementStock, 
      * Utilisé par le tableau de bord pour afficher les derniers mouvements.
      */
     Page<MouvementStock> findAllByOrderByDateCreationDesc(Pageable pageable);
+
+    /**
+     * Derniers mouvements sur une liste d'entrepôts.
+     * Utilisé par le tableau de bord des non-ADMIN.
+     */
+    Page<MouvementStock> findByEntrepotIdInOrderByDateCreationDesc(
+        List<Long> entrepotIds, Pageable pageable
+    );
 }

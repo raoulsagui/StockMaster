@@ -106,7 +106,8 @@ public class SecurityConfig {
 
                 // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
                 .requestMatchers("/api/stocks/**", "/api/alertes/**",
-                        "/api/rapports/**", "/api/emplacements/**")
+                        "/api/rapports/**", "/api/emplacements/**",
+                        "/api/dashboard/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
 
                 // Toutes les autres routes nécessitent d'être authentifié

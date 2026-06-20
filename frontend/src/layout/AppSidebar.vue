@@ -31,14 +31,14 @@ const menuItems = [
   { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
   { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
   { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs',    roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks',          roles: null },
+  { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks',          roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
   { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
   { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
   { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
   { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes',       roles: ['ADMIN', 'GESTIONNAIRE'] },
   { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires',     roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
-  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes',         roles: null },
-  { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports',        roles: null },
+  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+  { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
   { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs',    roles: ['ADMIN'] },
 ]
 
@@ -57,18 +57,7 @@ const sections = computed(() => {
 
 const getItemsBySection = (section) => menuItemsFiltres.value.filter(i => i.section === section)
 const topItems = computed(() => menuItemsFiltres.value.filter(i => !i.section))
-const isActive = (name) => {
-  if (name === 'stocks') {
-    return ['stocks', 'entrees', 'sorties', 'transferts'].includes(route.name)
-  }
-  if (name === 'entrepots') {
-    return route.name === 'entrepots'
-  }
-  if (name === 'produits') {
-    return route.name === 'produits'
-  }
-  return route.name === name
-}
+const isActive = (name) => route.name === name
 
 // Tooltip via Teleport — position fixed pour échapper au overflow de la nav
 const tooltip = ref({ visible: false, label: '', top: 0 })
@@ -159,6 +148,7 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
       <template v-for="item in topItems" :key="item.to">
         <RouterLink
           :to="{ name: item.to }"
+          active-class=""
           :class="[
             'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150',
             collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2',
@@ -187,6 +177,7 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
         <template v-for="item in getItemsBySection(section)" :key="item.to">
           <RouterLink
             :to="{ name: item.to }"
+            active-class=""
             :class="[
               'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150',
               collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2',

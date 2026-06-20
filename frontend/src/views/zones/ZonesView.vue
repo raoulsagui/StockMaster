@@ -9,10 +9,12 @@ import ZoneModal     from '@/components/zones/ZoneModal.vue'
 import zoneService    from '@/services/zoneService'
 import entrepotService from '@/services/entrepotService'
 import { usePermissions } from '@/composables/usePermissions'
+import { useToast }       from '@/composables/useToast'
 
 const router = useRouter()
 const route  = useRoute()
 const { peutGererEntrepots } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -89,7 +91,7 @@ const toggleStatut = async (zone) => {
     const updated = await zoneService.toggleStatut(zone.id)
     zone.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 

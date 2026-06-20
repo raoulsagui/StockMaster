@@ -4,14 +4,17 @@ import com.example.backend.module.entrepot.dto.EntrepotRequestDTO;
 import com.example.backend.module.entrepot.dto.EntrepotResponseDTO;
 import com.example.backend.module.entrepot.entity.Entrepot;
 import com.example.backend.module.entrepot.repository.EntrepotRepository;
+import com.example.backend.module.utilisateur.entity.Role;
 import com.example.backend.module.utilisateur.entity.Utilisateur;
 import com.example.backend.module.utilisateur.repository.UtilisateurRepository;
 import com.example.backend.module.zone.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Service du module Entrepôt.
@@ -118,8 +121,62 @@ public class EntrepotService {
     }
 
     // -------------------------------------------------------
+    // GESTION DES MEMBRES
+    // -------------------------------------------------------
+
+    /**
+     * Retourne les entrepôts de l'utilisateur connecté.
+     * - ADMIN → tous les entrepôts
+     * - GESTIONNAIRE / MAGASINIER / AUDITEUR → uniquement leurs entrepôts assignés
+     */
+    public List<EntrepotResponseDTO> findMesEntrepots() {
+        Utilisateur connecte = getUtilisateurConnecte();
+        if (connecte == null) return List.of();
+
+        List<Entrepot> entrepots;
+        if (connecte.getRole() == Role.ADMIN) {
+            entrepots = entrepotRepository.findAll();
+        } else {
+            entrepots = entrepotRepository.findByMembresId(connecte.getId());
+        }
+
+        return entrepots.stream()
+                .map(e -> EntrepotResponseDTO.fromEntity(e,
+                        zoneRepository.countByEntrepotId(e.getId())))
+                .toList();
+    }
+
+    /**
+     * Assigne une liste de membres à un entrepôt.
+     * Remplace les membres existants par la nouvelle liste.
+     * Réservé à l'ADMIN.
+     */
+    @Transactional
+    public EntrepotResponseDTO mettreAJourMembres(Long entrepotId, List<Long> membresIds) {
+        Entrepot entrepot = findEntrepotOrThrow(entrepotId);
+
+        Set<Utilisateur> membres = new java.util.HashSet<>(
+            utilisateurRepository.findAllById(membresIds)
+        );
+        entrepot.setMembres(membres);
+
+        Entrepot saved = entrepotRepository.save(entrepot);
+        long nombreZones = zoneRepository.countByEntrepotId(entrepotId);
+        return EntrepotResponseDTO.fromEntity(saved, nombreZones);
+    }
+
+    // -------------------------------------------------------
     // MÉTHODES PRIVÉES
     // -------------------------------------------------------
+
+    private Utilisateur getUtilisateurConnecte() {
+        try {
+            String email = SecurityContextHolder.getContext().getAuthentication().getName();
+            return utilisateurRepository.findByEmail(email).orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     private Entrepot findEntrepotOrThrow(Long id) {
         return entrepotRepository.findById(id)

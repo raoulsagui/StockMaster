@@ -8,9 +8,11 @@ import EntrepotTableRow from '@/components/entrepots/EntrepotTableRow.vue'
 import EntrepotModal    from '@/components/entrepots/EntrepotModal.vue'
 import entrepotService  from '@/services/entrepotService'
 import { usePermissions } from '@/composables/usePermissions'
+import { useToast }       from '@/composables/useToast'
 
 const router = useRouter()
 const { peutGererEntrepots } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -75,7 +77,7 @@ const toggleStatut = async (entrepot) => {
     const updated = await entrepotService.toggleStatut(entrepot.id)
     entrepot.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 </script>

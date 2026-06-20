@@ -7,7 +7,9 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entité JPA représentant un entrepôt.
@@ -68,11 +70,29 @@ public class Entrepot {
     private boolean actif = true;
 
     /**
-     * Responsable de l'entrepôt (optionnel).
+     * Responsable principal de l'entrepôt (optionnel).
+     * C'est le gestionnaire en chef de cet entrepôt.
      */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "responsable_id", nullable = true)
     private Utilisateur responsable;
+
+    /**
+     * Membres assignés à cet entrepôt (gestionnaires et magasiniers).
+     * Ces utilisateurs voient cet entrepôt dans leur dashboard.
+     *
+     * Table de liaison : entrepot_utilisateurs (entrepot_id, utilisateur_id)
+     * Un utilisateur peut être assigné à plusieurs entrepôts.
+     * Un entrepôt peut avoir plusieurs membres.
+     */
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "entrepot_utilisateurs",
+        joinColumns = @JoinColumn(name = "entrepot_id"),
+        inverseJoinColumns = @JoinColumn(name = "utilisateur_id")
+    )
+    private Set<Utilisateur> membres = new HashSet<>();
 
     /**
      * Liste des zones de stockage de cet entrepôt.

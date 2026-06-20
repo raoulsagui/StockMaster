@@ -131,4 +131,33 @@ public class EntrepotController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    /**
+     * GET /api/entrepots/mes-entrepots
+     * Retourne les entrepôts de l'utilisateur connecté.
+     * ADMIN → tous, autres → uniquement leurs entrepôts assignés.
+     */
+    @GetMapping("/mes-entrepots")
+    public ResponseEntity<List<EntrepotResponseDTO>> mesEntrepots() {
+        return ResponseEntity.ok(entrepotService.findMesEntrepots());
+    }
+
+    /**
+     * PATCH /api/entrepots/{id}/membres
+     * Met à jour la liste des membres assignés à un entrepôt.
+     * Accès : ADMIN uniquement.
+     *
+     * Body : [1, 2, 3] (liste d'IDs utilisateurs)
+     */
+    @PatchMapping("/{id}/membres")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> mettreAJourMembres(
+            @PathVariable Long id,
+            @RequestBody List<Long> membresIds) {
+        try {
+            return ResponseEntity.ok(entrepotService.mettreAJourMembres(id, membresIds));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

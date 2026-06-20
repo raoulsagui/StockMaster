@@ -17,8 +17,10 @@ import FournisseurTableRow    from '@/components/fournisseurs/FournisseurTableRo
 import FournisseurModal       from '@/components/fournisseurs/FournisseurModal.vue'
 import fournisseurService     from '@/services/fournisseurService'
 import { usePermissions }     from '@/composables/usePermissions'
+import { useToast }           from '@/composables/useToast'
 
 const { peutGererFournisseurs } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -82,7 +84,7 @@ const toggleStatut = async (fournisseur) => {
     const updated = await fournisseurService.toggleStatut(fournisseur.id)
     fournisseur.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 </script>

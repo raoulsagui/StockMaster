@@ -103,6 +103,17 @@ public class StockController {
     }
 
     /**
+     * GET /api/stocks/mouvements/derniers?limit=10
+     * Les N derniers mouvements toutes entités confondues.
+     * Utilisé par le tableau de bord.
+     */
+    @GetMapping("/mouvements/derniers")
+    public ResponseEntity<List<MouvementStockResponseDTO>> getDerniersMouvements(
+            @RequestParam(defaultValue = "10") int limit) {
+        return ResponseEntity.ok(stockService.getDerniersMouvements(limit));
+    }
+
+    /**
      * PATCH /api/stocks/{id}/seuils
      * Configure les seuils min/max d'un stock.
      * Réservé aux ADMIN et GESTIONNAIRE.

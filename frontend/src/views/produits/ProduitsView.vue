@@ -20,11 +20,13 @@ import ProduitFiltresMobileComponent          from '@/components/produits/Produi
 import ProduitTableComponent                  from '@/components/produits/ProduitTableComponent.vue'
 import ProduitModalCrudComponent              from '@/components/produits/ProduitModalCrudComponent.vue'
 import { usePermissions }                     from '@/composables/usePermissions'
+import { useToast }                           from '@/composables/useToast'
 
 // -------------------------------------------------------
 // DONNÉES
 // -------------------------------------------------------
 const { peutGererCatalogue } = usePermissions()
+const toast = useToast()
 const produits   = ref([])
 const categories = ref([])
 const isLoading  = ref(false)
@@ -182,7 +184,7 @@ async function toggleStatut(p) {
     const updated = await produitService.toggleActif(p.id)
     p.actif = updated.actif
   } catch {
-    alert('Erreur lors de la mise à jour du statut.')
+    toast.error('Erreur lors de la mise à jour du statut.')
   }
 }
 </script>

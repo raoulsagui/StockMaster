@@ -15,8 +15,10 @@ import transfertService from '@/services/transfertService'
 import produitService   from '@/services/produitService'
 import entrepotService  from '@/services/entrepotService'
 import { usePermissions } from '@/composables/usePermissions'
+import { useToast }       from '@/composables/useToast'
 
 const { peutCreerMouvement } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -114,7 +116,7 @@ async function expedier(t) {
     const idx = transferts.value.findIndex(x => x.id === updated.id)
     if (idx !== -1) transferts.value[idx] = updated
   } catch (e) {
-    alert(e.response?.data ?? 'Erreur lors de l\'expédition.')
+    toast.error(e.response?.data ?? "Erreur lors de l'expédition.")
   }
 }
 
@@ -124,18 +126,18 @@ async function receptionner(t) {
     const idx = transferts.value.findIndex(x => x.id === updated.id)
     if (idx !== -1) transferts.value[idx] = updated
   } catch (e) {
-    alert(e.response?.data ?? 'Erreur lors de la réception.')
+    toast.error(e.response?.data ?? 'Erreur lors de la réception.')
   }
 }
 
 async function annuler(t) {
-  if (!confirm(`Annuler le transfert ${t.reference} ?`)) return
   try {
     const updated = await transfertService.annuler(t.id)
     const idx = transferts.value.findIndex(x => x.id === updated.id)
     if (idx !== -1) transferts.value[idx] = updated
+    toast.success(`Transfert ${t.reference} annulé.`)
   } catch (e) {
-    alert(e.response?.data ?? 'Erreur lors de l\'annulation.')
+    toast.error(e.response?.data ?? "Erreur lors de l'annulation.")
   }
 }
 

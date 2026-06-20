@@ -15,8 +15,10 @@ import produitService     from '@/services/produitService'
 import entrepotService    from '@/services/entrepotService'
 import fournisseurService from '@/services/fournisseurService'
 import { usePermissions } from '@/composables/usePermissions'
+import { useToast }       from '@/composables/useToast'
 
 const { peutCreerMouvement, peutValiderMouvement } = usePermissions()
+const toast = useToast()
 
 // -------------------------------------------------------
 // DONNÉES
@@ -119,18 +121,18 @@ async function valider(entree) {
     const idx = entrees.value.findIndex(e => e.id === updated.id)
     if (idx !== -1) entrees.value[idx] = updated
   } catch (e) {
-    alert(e.response?.data ?? 'Erreur lors de la validation.')
+    toast.error(e.response?.data ?? 'Erreur lors de la validation.')
   }
 }
 
 async function annuler(entree) {
-  if (!confirm(`Annuler le bon ${entree.reference} ?`)) return
   try {
     const updated = await entreeService.annuler(entree.id)
     const idx = entrees.value.findIndex(e => e.id === updated.id)
     if (idx !== -1) entrees.value[idx] = updated
+    toast.success(`Bon ${entree.reference} annulé.`)
   } catch (e) {
-    alert(e.response?.data ?? 'Erreur lors de l\'annulation.')
+    toast.error(e.response?.data ?? "Erreur lors de l'annulation.")
   }
 }
 
