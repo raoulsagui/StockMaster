@@ -148,24 +148,28 @@ async function soumettreSeuilsModal(payload) {
 
 <template>
   <AppLayout>
-    <div class="space-y-4 md:space-y-6">
+    <div class="space-y-5">
 
-      <!-- EN-TÊTE -->
-      <div class="flex items-center justify-between">
-        <div class="hidden md:block">
-          <h1 class="text-2xl font-bold text-gray-900">Stocks</h1>
-          <p class="text-sm text-gray-500 mt-0.5">
-            {{ stocks.length }} références · {{ nbEnAlerte }} en alerte
-          </p>
+      <!-- EN-TÊTE GRADIENT -->
+      <div class="page-header bg-gradient-to-r from-slate-700 to-gray-800 shadow-lg shadow-slate-700/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-white">Stocks</h1>
+            <p class="text-slate-300 text-sm mt-0.5">{{ stocks.length }} références ·
+              <span :class="nbEnAlerte > 0 ? 'text-red-300 font-semibold' : 'text-slate-400'">{{ nbEnAlerte }} en alerte</span>
+            </p>
+          </div>
+          <button @click="chargerStocks"
+            class="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors backdrop-blur-sm border border-white/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Actualiser
+          </button>
         </div>
-        <!-- Bouton rafraîchir -->
-        <button @click="chargerStocks" class="btn-secondary">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-          Actualiser
-        </button>
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute -right-4 top-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
       </div>
 
       <!-- KPI -->

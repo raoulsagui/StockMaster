@@ -19,6 +19,13 @@ const rolesLabels = {
   AUDITEUR:     'Auditeur',
 }
 
+const roleColors = {
+  ADMIN:        'from-purple-500 to-purple-700',
+  GESTIONNAIRE: 'from-blue-500 to-blue-700',
+  MAGASINIER:   'from-green-500 to-green-700',
+  AUDITEUR:     'from-yellow-500 to-yellow-600',
+}
+
 const props = defineProps({
   collapsed: { type: Boolean, default: false },
 })
@@ -42,7 +49,6 @@ const menuItems = [
   { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs',    roles: ['ADMIN'] },
 ]
 
-// Filtre les items selon le rôle de l'utilisateur connecté
 const userRole = authStore.role
 const menuItemsFiltres = computed(() =>
   menuItems.filter(item => !item.roles || item.roles.includes(userRole))
@@ -59,17 +65,18 @@ const getItemsBySection = (section) => menuItemsFiltres.value.filter(i => i.sect
 const topItems = computed(() => menuItemsFiltres.value.filter(i => !i.section))
 const isActive = (name) => route.name === name
 
-// Tooltip via Teleport — position fixed pour échapper au overflow de la nav
-const tooltip = ref({ visible: false, label: '', top: 0 })
+// Initiales pour l'avatar
+const initiales = computed(() => {
+  const u = authStore.utilisateur
+  if (!u) return '?'
+  return `${u.prenom?.[0] ?? ''}${u.nom?.[0] ?? ''}`.toUpperCase()
+})
 
+const tooltip = ref({ visible: false, label: '', top: 0 })
 const showTooltip = (event, label) => {
   if (!props.collapsed) return
   const rect = event.currentTarget.getBoundingClientRect()
-  tooltip.value = {
-    visible: true,
-    label,
-    top: rect.top + rect.height / 2,
-  }
+  tooltip.value = { visible: true, label, top: rect.top + rect.height / 2 }
 }
 const hideTooltip = () => { tooltip.value.visible = false }
 
@@ -96,25 +103,22 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
 </script>
 
 <template>
-  <!-- Tooltip global via Teleport — position:fixed pour échapper aux overflow -->
+  <!-- Tooltip global -->
   <Teleport to="body">
     <Transition
       enter-active-class="transition-opacity duration-150"
-      enter-from-class="opacity-0"
-      enter-to-class="opacity-100"
+      enter-from-class="opacity-0" enter-to-class="opacity-100"
       leave-active-class="transition-opacity duration-100"
-      leave-from-class="opacity-100"
-      leave-to-class="opacity-0"
+      leave-from-class="opacity-100" leave-to-class="opacity-0"
     >
       <div
         v-if="tooltip.visible"
         class="fixed z-[9999] pointer-events-none"
         :style="{ top: tooltip.top + 'px', left: '72px', transform: 'translateY(-50%)' }"
       >
-        <div class="px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap shadow-lg border border-slate-700">
+        <div class="px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap shadow-xl">
           {{ tooltip.label }}
-          <!-- Petite flèche gauche -->
-          <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-slate-900"></div>
+          <div class="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900"></div>
         </div>
       </div>
     </Transition>
@@ -122,27 +126,27 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
 
   <aside
     :class="[
-      'hidden lg:flex flex-col fixed inset-y-0 left-0 z-40',
-      'bg-slate-800 text-white transition-all duration-300 ease-in-out',
+      'hidden lg:flex flex-col fixed inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out',
+      'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900',
       collapsed ? 'w-16' : 'w-64',
     ]"
   >
-    <!-- EN-TÊTE : Logo -->
-    <div class="flex items-center gap-3 px-4 border-b border-slate-700 flex-shrink-0 h-16">
-      <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+    <!-- LOGO -->
+    <div class="flex items-center gap-3 px-4 border-b border-white/10 flex-shrink-0 h-16">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/30">
         <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
         </svg>
       </div>
       <div v-show="!collapsed" class="overflow-hidden whitespace-nowrap min-w-0">
-        <h1 class="text-white font-bold text-base leading-tight">StockMaster</h1>
+        <h1 class="text-white font-bold text-base leading-tight tracking-tight">StockMaster</h1>
         <p class="text-slate-400 text-xs">Gestion des stocks</p>
       </div>
     </div>
 
     <!-- NAVIGATION -->
-    <nav class="flex-1 overflow-y-scroll overflow-x-hidden py-2 px-2 space-y-0.5 scrollbar-hide">
+    <nav class="flex-1 overflow-y-scroll overflow-x-hidden py-3 px-2 scrollbar-hide">
 
       <!-- Items sans section -->
       <template v-for="item in topItems" :key="item.to">
@@ -150,13 +154,18 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
           :to="{ name: item.to }"
           active-class=""
           :class="[
-            'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150',
-            collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2',
-            isActive(item.to) ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white',
+            'relative flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 mb-0.5',
+            collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+            isActive(item.to)
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+              : 'text-slate-400 hover:bg-white/8 hover:text-white',
           ]"
           @mouseenter="showTooltip($event, item.label)"
           @mouseleave="hideTooltip"
         >
+          <!-- Indicateur actif -->
+          <span v-if="isActive(item.to) && !collapsed"
+            class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white/60 rounded-r-full"/>
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="iconPaths[item.icon]" />
           </svg>
@@ -164,28 +173,32 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
         </RouterLink>
       </template>
 
-      <div v-if="topItems.length" class="pt-1"></div>
+      <div v-if="topItems.length" class="my-2 border-t border-white/8"></div>
 
       <!-- Sections groupées -->
       <template v-for="section in sections" :key="section">
         <p v-show="!collapsed"
-          class="px-3 pt-3 pb-0.5 text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">
+          class="px-3 pt-4 pb-1 text-[10px] font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap">
           {{ section }}
         </p>
-        <div v-show="collapsed" class="border-t border-slate-700 my-2"></div>
+        <div v-show="collapsed" class="border-t border-white/8 my-2"></div>
 
         <template v-for="item in getItemsBySection(section)" :key="item.to">
           <RouterLink
             :to="{ name: item.to }"
             active-class=""
             :class="[
-              'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150',
-              collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2',
-              isActive(item.to) ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-700 hover:text-white',
+              'relative flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 mb-0.5',
+              collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
+              isActive(item.to)
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                : 'text-slate-400 hover:bg-white/8 hover:text-white',
             ]"
             @mouseenter="showTooltip($event, item.label)"
             @mouseleave="hideTooltip"
           >
+            <span v-if="isActive(item.to) && !collapsed"
+              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white/60 rounded-r-full"/>
             <svg v-if="item.icon === 'emplacements'"
               class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="emplacementsPath1" />
@@ -200,14 +213,36 @@ const emplacementsPath2 = "M15 11a3 3 0 11-6 0 3 3 0 016 0z"
       </template>
     </nav>
 
-    <!-- PIED : bouton déconnexion -->
-    <div class="border-t border-slate-700 px-3 py-4 flex-shrink-0">
+    <!-- PIED : Profil utilisateur + déconnexion -->
+    <div class="border-t border-white/10 p-3 flex-shrink-0 space-y-1">
+
+      <!-- Avatar + infos utilisateur -->
+      <div v-show="!collapsed" class="flex items-center gap-3 px-2 py-2 rounded-xl bg-white/5 mb-2">
+        <div :class="['w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center flex-shrink-0 text-xs font-bold text-white shadow', roleColors[userRole] ?? 'from-slate-500 to-slate-700']">
+          {{ initiales }}
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-white truncate leading-tight">{{ authStore.nomComplet }}</p>
+          <p class="text-xs text-slate-400 truncate">{{ rolesLabels[userRole] ?? userRole }}</p>
+        </div>
+      </div>
+
+      <!-- Avatar seul en mode collapsed -->
+      <div v-show="collapsed" class="flex justify-center mb-2"
+        @mouseenter="showTooltip($event, authStore.nomComplet)"
+        @mouseleave="hideTooltip">
+        <div :class="['w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center text-xs font-bold text-white shadow', roleColors[userRole] ?? 'from-slate-500 to-slate-700']">
+          {{ initiales }}
+        </div>
+      </div>
+
+      <!-- Déconnexion -->
       <button
         @click="logout"
         :class="[
-          'flex items-center gap-3 rounded-lg text-sm font-medium transition-colors duration-150 w-full',
+          'flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 w-full',
           collapsed ? 'justify-center px-0 py-2.5' : 'px-3 py-2.5',
-          'text-slate-300 hover:bg-red-600/20 hover:text-red-400',
+          'text-slate-400 hover:bg-red-500/15 hover:text-red-400',
         ]"
         @mouseenter="showTooltip($event, 'Déconnexion')"
         @mouseleave="hideTooltip"
