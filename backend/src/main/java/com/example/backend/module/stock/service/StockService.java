@@ -147,6 +147,23 @@ public class StockService {
     // -------------------------------------------------------
 
     /**
+     * Vérifie qu'un stock suffisant existe pour (produit, entrepôt).
+     * Utilisé par TransfertService avant la création d'un brouillon.
+     *
+     * @throws RuntimeException si le stock est absent ou insuffisant
+     */
+    public void verifierStockSuffisant(Long produitId, Long entrepotId, int quantite) {
+        Stock stock = stockRepository
+            .findByProduitIdAndEntrepotId(produitId, entrepotId)
+            .orElseThrow(() -> new RuntimeException(
+                "Ce produit n'est pas en stock dans l'entrepôt source"));
+        if (stock.getQuantiteDisponible() < quantite)
+            throw new RuntimeException(
+                "Stock insuffisant dans l'entrepôt source : disponible="
+                + stock.getQuantiteDisponible() + ", demandé=" + quantite);
+    }
+
+    /**
      * Ajoute une quantité au stock (utilisé par le module 8 : entrées).
      * Crée automatiquement une ligne de stock si elle n'existe pas encore.
      *

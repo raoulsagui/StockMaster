@@ -77,6 +77,11 @@ public class TransfertService {
             throw new RuntimeException("L'entrepôt source et destination doivent être différents");
         }
 
+        // Vérifie que le produit existe bien en stock dans l'entrepôt source
+        stockService.verifierStockSuffisant(
+                produit.getId(), source.getId(), dto.getQuantite()
+        );
+
         var transfert = Transfert.builder()
                 .reference(genererReference())
                 .statut(Transfert.StatutTransfert.BROUILLON)

@@ -139,32 +139,37 @@ async function confirmerSupprimer() {
 
 <template>
   <AppLayout>
-    <div class="space-y-4 md:space-y-6">
+    <div class="space-y-5">
 
-      <!-- EN-TÊTE -->
-      <div class="flex items-center justify-between">
-        <div class="hidden md:block">
-          <h1 class="text-2xl font-bold text-gray-900">Catégories</h1>
-          <p class="text-sm text-gray-500 mt-0.5">{{ categories.length }} catégorie(s) enregistrée(s)</p>
+      <!-- EN-TÊTE GRADIENT -->
+      <div class="page-header bg-gradient-to-r from-pink-500 to-rose-600 shadow-lg shadow-pink-500/20">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-white">Catégories</h1>
+            <p class="text-pink-100 text-sm mt-0.5">{{ categories.length }} catégorie(s) enregistrée(s)</p>
+          </div>
+          <button v-if="peutGererCatalogue" @click="ouvrirCreer"
+            class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors backdrop-blur-sm border border-white/20">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nouvelle catégorie
+          </button>
         </div>
-        <button v-if="peutGererCatalogue" @click="ouvrirCreer" class="btn-primary justify-center self-end sm:self-auto">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-          Nouvelle catégorie
-        </button>
+        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+        <div class="absolute -right-4 top-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
       </div>
 
       <!-- BARRE DE RECHERCHE -->
-      <div class="card p-3 md:p-4">
-        <div class="relative">
-          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
-          </svg>
-          <input v-model="recherche" type="text" placeholder="Rechercher…" class="form-input pl-9"/>
-        </div>
+      <div class="relative">
+        <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+          fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+        </svg>
+        <input v-model="recherche" type="text"
+          placeholder="Rechercher une catégorie…"
+          class="form-input pl-10 bg-white shadow-sm"/>
       </div>
 
       <!-- ERREUR -->
