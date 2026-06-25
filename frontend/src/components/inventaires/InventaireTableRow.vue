@@ -42,20 +42,10 @@ const typeConfig = {
 
     <!-- Progression -->
     <td class="table-cell">
-      <div class="flex items-center gap-2">
-        <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden min-w-[60px]">
-          <div
-            class="h-full bg-blue-500 rounded-full transition-all"
-            :style="{ width: inventaire.pourcentageProgression + '%' }"
-          ></div>
-        </div>
-        <span class="text-xs text-gray-500 w-10 text-right">
-          {{ inventaire.pourcentageProgression }}%
-        </span>
-      </div>
-      <p class="text-xs text-gray-400 mt-0.5">
-        {{ inventaire.nombreLignesComptees }}/{{ inventaire.nombreLignes }} lignes
-      </p>
+      <span class="text-sm text-gray-700 font-mono">
+        {{ inventaire.nombreLignesComptees }}/{{ inventaire.nombreLignes }}
+      </span>
+      <p class="text-xs text-gray-400 mt-0.5">lignes</p>
     </td>
 
     <!-- Écarts -->

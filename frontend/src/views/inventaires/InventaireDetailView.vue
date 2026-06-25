@@ -307,19 +307,10 @@ const statutConfig = {
           <!-- Progression -->
           <div class="card p-4 col-span-2 lg:col-span-1">
             <p class="text-xs text-gray-500 uppercase font-medium">Progression</p>
-            <div class="mt-2 flex items-end gap-1">
-              <span class="text-3xl font-bold text-blue-600">{{ inventaire.pourcentageProgression }}</span>
-              <span class="text-lg text-blue-400 mb-0.5">%</span>
-            </div>
-            <div class="mt-2 h-2 bg-gray-100 rounded-full overflow-hidden">
-              <div
-                class="h-full bg-blue-500 rounded-full transition-all duration-500"
-                :style="{ width: inventaire.pourcentageProgression + '%' }"
-              ></div>
-            </div>
-            <p class="text-xs text-gray-400 mt-1">
-              {{ inventaire.nombreLignesComptees }} / {{ inventaire.nombreLignes }} lignes
+            <p class="text-2xl font-bold text-blue-600 mt-1">
+              {{ inventaire.nombreLignesComptees }}<span class="text-base font-normal text-gray-400"> / {{ inventaire.nombreLignes }}</span>
             </p>
+            <p class="text-xs text-gray-400 mt-1">lignes comptées</p>
           </div>
 
           <!-- Lignes totales -->

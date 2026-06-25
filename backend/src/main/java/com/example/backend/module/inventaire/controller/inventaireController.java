@@ -38,7 +38,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/inventaires")
 @RequiredArgsConstructor
-public class inventaireController {
+public class InventaireController {
 
     private final InventaireService inventaireService;
 
