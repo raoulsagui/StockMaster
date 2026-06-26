@@ -154,24 +154,22 @@ async function reinitialiserMotDePasse(u) {
   <AppLayout>
     <div class="space-y-5">
 
-      <!-- EN-TÊTE GRADIENT -->
-      <div class="page-header bg-gradient-to-r from-purple-600 to-violet-700 shadow-lg shadow-purple-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-xl font-bold text-white">Utilisateurs</h1>
-            <p class="text-purple-100 text-sm mt-0.5">{{ utilisateurs.length }} comptes enregistrés</p>
-          </div>
-          <button @click="ouvrirCreer"
-            class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors backdrop-blur-sm border border-white/20">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nouvel utilisateur
-          </button>
-        </div>
-        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
-        <div class="absolute -right-4 top-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
-      </div>
+<!-- EN-TÊTE sobre -->
+       <div class="page-header">
+         <div class="flex items-center justify-between">
+           <div>
+             <h1 class="text-xl font-semibold text-gray-900">Utilisateurs</h1>
+             <p class="text-sm text-gray-400 mt-0.5">{{ utilisateurs.length }} comptes enregistrés</p>
+           </div>
+           <button @click="ouvrirCreer"
+             class="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+             </svg>
+             Nouvel utilisateur
+           </button>
+         </div>
+       </div>
 
       <!-- FILTRES DESKTOP + MOBILE -->
       <UtilisateurFiltresComponent

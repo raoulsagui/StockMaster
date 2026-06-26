@@ -31,22 +31,24 @@ const props = defineProps({
 })
 
 const menuItems = [
-  { section: null,             label: 'Tableau de bord', icon: 'dashboard',    to: 'tableau-de-bord', roles: null },
-  { section: 'Organisation',   label: 'Entrepôts',       icon: 'warehouse',    to: 'entrepots',       roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Organisation',   label: 'Zones',           icon: 'zones',        to: 'zones',           roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Organisation',   label: 'Emplacements',    icon: 'emplacements', to: 'emplacements',    roles: ['ADMIN', 'GESTIONNAIRE'] },
-  { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs',    roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks',          roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
-  { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
-  { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
-  { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes',       roles: ['ADMIN', 'GESTIONNAIRE'] },
-  { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires',     roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
-  { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
-  { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs',    roles: ['ADMIN'] },
+   { section: null,             label: 'Tableau de bord', icon: 'dashboard',    to: 'tableau-de-bord', roles: null },
+   { section: 'Organisation',   label: 'Entrepôts',       icon: 'warehouse',    to: 'entrepots',       roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Organisation',   label: 'Zones',           icon: 'zones',        to: 'zones',           roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Organisation',   label: 'Emplacements',    icon: 'emplacements', to: 'emplacements',    roles: ['ADMIN', 'GESTIONNAIRE'] },
+   { section: 'Catalogue',      label: 'Produits',        icon: 'produits',     to: 'produits',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Catalogue',      label: 'Catégories',      icon: 'categories',   to: 'categories',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Catalogue',      label: 'Fournisseurs',    icon: 'fournisseurs', to: 'fournisseurs',    roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Mouvements',     label: 'Stocks',          icon: 'stocks',       to: 'stocks',          roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Mouvements',     label: 'Entrées',         icon: 'entrees',      to: 'entrees',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+   { section: 'Mouvements',     label: 'Sorties',         icon: 'sorties',      to: 'sorties',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+   { section: 'Mouvements',     label: 'Transferts',      icon: 'transferts',   to: 'transferts',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+   { section: 'Gestion',        label: 'Commandes',       icon: 'commandes',    to: 'commandes',       roles: ['ADMIN', 'GESTIONNAIRE'] },
+   { section: 'Gestion',        label: 'Inventaires',     icon: 'inventaires',  to: 'inventaires',     roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER'] },
+   { section: 'Gestion',        label: 'Alertes',         icon: 'alertes',      to: 'alertes',         roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Gestion',        label: 'Rapports',        icon: 'rapports',     to: 'rapports',        roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Outils',         label: 'Codes-barres',    icon: 'codebarres',   to: 'codebarres',      roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+   { section: 'Administration', label: 'Utilisateurs',    icon: 'utilisateurs', to: 'utilisateurs',    roles: ['ADMIN'] },
+   { section: 'Administration', label: 'Traçabilité',     icon: 'audit',        to: 'audit',           roles: ['ADMIN', 'AUDITEUR'] },
 ]
 
 const userRole = authStore.role
@@ -91,10 +93,13 @@ const iconPaths = {
   entrees:      "M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1",
   sorties:      "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1",
   transferts:   "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4",
-  commandes:    "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
-  inventaires:  "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
-  alertes:      "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
-  rapports:     "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+commandes:    "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01",
+   inventaires:  "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4",
+   alertes:      "M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9",
+   rapports:     "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+   codebarres:   "M3 9a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2V9zm2 0v6h6V9H5zm8-3a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2h-6a2 2 0 01-2-2V6zm2 0v6h6V6h-6z",
+   audit:        "M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9v2m0-6v2m6-2v2",
+}
   utilisateurs: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
 }
 

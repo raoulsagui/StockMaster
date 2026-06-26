@@ -208,6 +208,26 @@ const router = createRouter({
     },
 
     // -------------------------------------------------------
+    // MODULE 15 : Traçabilité — ADMIN + AUDITEUR
+    // -------------------------------------------------------
+    {
+      path: '/audit',
+      name: 'audit',
+      component: () => import('@/views/audit/AuditView.vue'),
+      meta: { title: 'Traçabilité', roles: ['ADMIN', 'AUDITEUR'] },
+    },
+
+    // -------------------------------------------------------
+    // MODULE 18 : Codes-barres — tous les rôles
+    // -------------------------------------------------------
+    {
+      path: '/codebarres',
+      name: 'codebarres',
+      component: () => import('@/views/codebarres/CodeBarresView.vue'),
+      meta: { title: 'Codes-barres', roles: ['ADMIN', 'GESTIONNAIRE', 'MAGASINIER', 'AUDITEUR'] },
+    },
+
+    // -------------------------------------------------------
     // Emplacements — ADMIN + GESTIONNAIRE
     // -------------------------------------------------------
     {
