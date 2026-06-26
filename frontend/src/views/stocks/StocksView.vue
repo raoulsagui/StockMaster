@@ -1,13 +1,6 @@
 <script setup>
 // ============================================================
-// VUE : Gestion des stocks (Module 7)
-//
-// Orchestrateur — gère :
-//   - Chargement des stocks depuis l'API
-//   - Filtres (produit, entrepôt, statut alerte)
-//   - Pagination
-//   - Ouverture du panneau historique
-//   - Ouverture de la modal seuils
+// VUE : Gestion des stocks (Module 7) — version sobre
 // ============================================================
 
 import { ref, computed, watch, onMounted } from 'vue'
@@ -18,9 +11,6 @@ import StockSeuilsModalComponent   from '@/components/stocks/StockSeuilsModalCom
 import StockMouvementsComponent    from '@/components/stocks/StockMouvementsComponent.vue'
 import { usePermissions }          from '@/composables/usePermissions'
 
-// -------------------------------------------------------
-// DONNÉES
-// -------------------------------------------------------
 const { peutConfigurerSeuils } = usePermissions()
 const stocks    = ref([])
 const isLoading = ref(false)
@@ -40,17 +30,10 @@ async function chargerStocks() {
   }
 }
 
-// -------------------------------------------------------
-// FILTRES
-// -------------------------------------------------------
 const recherche     = ref('')
-const filtreAlerte  = ref('') // '' | 'faible' | 'sursock' | 'normal'
-
-// -------------------------------------------------------
-// PAGINATION
-// -------------------------------------------------------
-const pageCourante = ref(1)
-const parPage      = ref(15)
+const filtreAlerte  = ref('')
+const pageCourante  = ref(1)
+const parPage       = ref(15)
 
 watch([recherche, filtreAlerte], () => { pageCourante.value = 1 })
 
@@ -82,59 +65,38 @@ const stocksPagines = computed(() => {
   return stocksFiltres.value.slice(debut, debut + parPage.value)
 })
 
-// KPI calculés depuis les données chargées
 const nbReferences   = computed(() => stocks.value.length)
 const nbEnAlerte     = computed(() => stocks.value.filter(s => s.enStockFaible).length)
 const nbEnSurStock   = computed(() => stocks.value.filter(s => s.enSurStock).length)
 const nbNormaux      = computed(() => stocks.value.filter(s => !s.enStockFaible && !s.enSurStock).length)
-
-// Total des unités disponibles tous entrepôts confondus
 const totalDisponible = computed(() =>
   stocks.value.reduce((acc, s) => acc + (s.quantiteDisponible ?? 0), 0)
 )
-
-// Total des unités réservées
 const totalReserve = computed(() =>
   stocks.value.reduce((acc, s) => acc + (s.quantiteReservee ?? 0), 0)
 )
 
-// Taux de santé du stock = % de références en état normal
-const tauxSante = computed(() => {
-  if (!nbReferences.value) return 100
-  return Math.round((nbNormaux.value / nbReferences.value) * 100)
-})
-
-// -------------------------------------------------------
-// PANNEAU HISTORIQUE
-// -------------------------------------------------------
 const showMouvements  = ref(false)
 const stockMouvements = ref(null)
-
 function ouvrirMouvements(stock) {
   stockMouvements.value = stock
   showMouvements.value  = true
 }
 
-// -------------------------------------------------------
-// MODAL SEUILS
-// -------------------------------------------------------
 const showSeuils    = ref(false)
 const stockSeuils   = ref(null)
 const isSaving      = ref(false)
 const erreurSeuils  = ref('')
-
 function ouvrirSeuils(stock) {
   stockSeuils.value  = stock
   erreurSeuils.value = ''
   showSeuils.value   = true
 }
-
 async function soumettreSeuilsModal(payload) {
   isSaving.value     = true
   erreurSeuils.value = ''
   try {
     const updated = await stockService.mettreAJourSeuils(stockSeuils.value.id, payload)
-    // Mise à jour locale sans recharger toute la liste
     const idx = stocks.value.findIndex(s => s.id === updated.id)
     if (idx !== -1) stocks.value[idx] = updated
     showSeuils.value = false
@@ -150,150 +112,66 @@ async function soumettreSeuilsModal(payload) {
   <AppLayout>
     <div class="space-y-5">
 
-      <!-- EN-TÊTE GRADIENT -->
-      <div class="page-header bg-gradient-to-r from-slate-700 to-gray-800 shadow-lg shadow-slate-700/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-xl font-bold text-white">Stocks</h1>
-            <p class="text-slate-300 text-sm mt-0.5">{{ stocks.length }} références ·
-              <span :class="nbEnAlerte > 0 ? 'text-red-300 font-semibold' : 'text-slate-400'">{{ nbEnAlerte }} en alerte</span>
-            </p>
-          </div>
-          <button @click="chargerStocks"
-            class="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors backdrop-blur-sm border border-white/20">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-            </svg>
-            Actualiser
-          </button>
+      <!-- EN-TÊTE sobre -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-semibold text-gray-900">Stocks</h1>
+          <p class="text-sm text-gray-400 mt-0.5">{{ stocks.length }} références suivies</p>
         </div>
-        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
-        <div class="absolute -right-4 top-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
+        <button @click="chargerStocks"
+          class="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Actualiser
+        </button>
       </div>
 
-      <!-- KPI -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+      <!-- KPI sobres -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
 
-        <!-- Références en stock -->
-        <div class="card flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-2xl font-bold text-gray-900">{{ nbReferences }}</p>
-            <p class="text-sm text-gray-500">Références suivies</p>
-            <p class="text-xs text-blue-600 font-medium mt-0.5">
-              {{ stocks.length }} combinaisons produit/entrepôt
-            </p>
-          </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-3.5">
+          <p class="text-lg font-semibold text-gray-900">{{ nbReferences }}</p>
+          <p class="text-xs text-gray-500">Références</p>
         </div>
 
-        <!-- Unités disponibles -->
-        <div class="card flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div class="w-12 h-12 rounded-xl bg-green-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-2xl font-bold text-gray-900">{{ totalDisponible.toLocaleString('fr-FR') }}</p>
-            <p class="text-sm text-gray-500">Unités disponibles</p>
-            <p class="text-xs text-gray-400 mt-0.5">
-              {{ totalReserve.toLocaleString('fr-FR') }} réservées
-            </p>
-          </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-3.5">
+          <p class="text-lg font-semibold text-gray-900">{{ totalDisponible.toLocaleString('fr-FR') }}</p>
+          <p class="text-xs text-gray-500">Unités dispo.</p>
+          <p class="text-xs text-gray-400">{{ totalReserve.toLocaleString('fr-FR') }} réservées</p>
         </div>
 
-        <!-- Taux de santé du stock -->
-        <div class="card flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div :class="['w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-            tauxSante >= 80 ? 'bg-green-600' : tauxSante >= 50 ? 'bg-yellow-500' : 'bg-red-600']">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p :class="['text-2xl font-bold', tauxSante >= 80 ? 'text-green-600' : tauxSante >= 50 ? 'text-yellow-600' : 'text-red-600']">
-              {{ tauxSante }}%
-            </p>
-            <p class="text-sm text-gray-500">Santé globale du stock</p>
-            <p class="text-xs text-gray-400 mt-0.5">{{ nbNormaux }} références en état normal</p>
-          </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-3.5">
+          <p class="text-lg font-semibold text-gray-900">{{ nbNormaux }}</p>
+          <p class="text-xs text-gray-500">Normaux</p>
         </div>
 
-        <!-- Stocks faibles -->
-        <div :class="['card flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer',
-          nbEnAlerte > 0 ? 'border-red-200' : '']"
-          @click="filtreAlerte = filtreAlerte === 'faible' ? '' : 'faible'"
-        >
-          <div :class="['w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-            nbEnAlerte > 0 ? 'bg-red-600' : 'bg-gray-400']">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p :class="['text-2xl font-bold', nbEnAlerte > 0 ? 'text-red-600' : 'text-gray-900']">
-              {{ nbEnAlerte }}
-            </p>
-            <p class="text-sm text-gray-500">Stocks faibles</p>
-            <p class="text-xs mt-0.5" :class="nbEnAlerte > 0 ? 'text-red-500 font-medium' : 'text-gray-400'">
-              {{ nbEnAlerte > 0 ? 'Cliquer pour filtrer' : 'Aucune alerte' }}
-            </p>
-          </div>
+        <div
+          :class="['bg-white rounded-xl border p-3.5 cursor-pointer transition-colors', nbEnAlerte > 0 ? 'border-red-200 bg-red-50/50' : 'border-gray-200']"
+          @click="filtreAlerte = filtreAlerte === 'faible' ? '' : 'faible'">
+          <p :class="['text-lg font-semibold', nbEnAlerte > 0 ? 'text-red-600' : 'text-gray-900']">{{ nbEnAlerte }}</p>
+          <p class="text-xs text-gray-500">Stock faible</p>
         </div>
 
-        <!-- Sur-stocks -->
-        <div :class="['card flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer',
-          nbEnSurStock > 0 ? 'border-orange-200' : '']"
-          @click="filtreAlerte = filtreAlerte === 'sursock' ? '' : 'sursock'"
-        >
-          <div :class="['w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0',
-            nbEnSurStock > 0 ? 'bg-orange-500' : 'bg-gray-400']">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p :class="['text-2xl font-bold', nbEnSurStock > 0 ? 'text-orange-600' : 'text-gray-900']">
-              {{ nbEnSurStock }}
-            </p>
-            <p class="text-sm text-gray-500">Sur-stocks</p>
-            <p class="text-xs mt-0.5" :class="nbEnSurStock > 0 ? 'text-orange-500 font-medium' : 'text-gray-400'">
-              {{ nbEnSurStock > 0 ? 'Cliquer pour filtrer' : 'Aucun sur-stock' }}
-            </p>
-          </div>
+        <div
+          :class="['bg-white rounded-xl border p-3.5 cursor-pointer transition-colors', nbEnSurStock > 0 ? 'border-amber-200 bg-amber-50/50' : 'border-gray-200']"
+          @click="filtreAlerte = filtreAlerte === 'sursock' ? '' : 'sursock'">
+          <p :class="['text-lg font-semibold', nbEnSurStock > 0 ? 'text-amber-600' : 'text-gray-900']">{{ nbEnSurStock }}</p>
+          <p class="text-xs text-gray-500">Sur-stock</p>
         </div>
 
-        <!-- Stocks normaux -->
-        <div class="card flex items-center gap-4 hover:shadow-md transition-shadow cursor-pointer"
-          @click="filtreAlerte = filtreAlerte === 'normal' ? '' : 'normal'"
-        >
-          <div class="w-12 h-12 rounded-xl bg-indigo-600 flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M5 13l4 4L19 7"/>
-            </svg>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-2xl font-bold text-gray-900">{{ nbNormaux }}</p>
-            <p class="text-sm text-gray-500">Stocks normaux</p>
-            <p class="text-xs text-gray-400 mt-0.5">Cliquer pour filtrer</p>
-          </div>
+        <div
+          class="bg-white rounded-xl border border-gray-200 p-3.5 cursor-pointer transition-colors hover:bg-gray-50"
+          @click="filtreAlerte = filtreAlerte === 'normal' ? '' : 'normal'">
+          <p class="text-lg font-semibold text-gray-900">{{ nbNormaux }}</p>
+          <p class="text-xs text-gray-500">Normaux</p>
         </div>
 
       </div>
 
       <!-- FILTRES -->
-      <div class="card p-3 md:p-4">
+      <div class="bg-white rounded-xl border border-gray-200 p-3">
         <div class="flex flex-col sm:flex-row gap-3">
           <div class="relative flex-1">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
@@ -304,11 +182,12 @@ async function soumettreSeuilsModal(payload) {
             <input
               v-model="recherche"
               type="text"
-              placeholder="Rechercher par produit ou entrepôt…"
-              class="form-input pl-9"
+              placeholder="Rechercher par produit ou entrepôt..."
+              class="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300"
             />
           </div>
-          <select v-model="filtreAlerte" class="form-input w-full sm:w-48">
+          <select v-model="filtreAlerte"
+            class="w-full sm:w-44 text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-300">
             <option value="">Tous les statuts</option>
             <option value="faible">Stock faible</option>
             <option value="sursock">Sur-stock</option>
@@ -317,10 +196,8 @@ async function soumettreSeuilsModal(payload) {
         </div>
       </div>
 
-      <!-- ERREUR API -->
-      <div v-if="erreur" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">
-        {{ erreur }}
-      </div>
+      <!-- ERREUR -->
+      <div v-if="erreur" class="rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm p-3">{{ erreur }}</div>
 
       <!-- TABLEAU -->
       <StockTableComponent
@@ -340,14 +217,12 @@ async function soumettreSeuilsModal(payload) {
 
     </div>
 
-    <!-- PANNEAU HISTORIQUE (side panel) -->
     <StockMouvementsComponent
       :visible="showMouvements"
       :stock="stockMouvements"
       @fermer="showMouvements = false"
     />
 
-    <!-- MODAL SEUILS -->
     <StockSeuilsModalComponent
       :visible="showSeuils"
       :stock="stockSeuils"

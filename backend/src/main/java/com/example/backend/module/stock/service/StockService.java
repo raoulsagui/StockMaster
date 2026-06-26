@@ -29,7 +29,7 @@ import java.util.List;
  *   - StockController (consultation + configuration des seuils)
  *   - EntreeService (module 8) : appelle ajouterStock()
  *   - SortieService (module 9) : appelle retirerStock()
- *   - TransfertService (module 10) : appelle transfererStock()
+ *   - TransfertService (module 10) : appelle reserverStock() / libererReservation()
  *
  * Toutes les modifications de stock créent un mouvement dans MouvementStock
  * pour la traçabilité complète (module 15).
@@ -223,6 +223,105 @@ public class StockService {
         return saved;
     }
 
+    /**
+     * Réserve une quantité du stock disponible.
+     * Utilisé par TransfertService.creer() pour verrouiller le stock
+     * dès la création du brouillon (empêche une autre opération d'utiliser
+     * le même stock entre-temps).
+     *
+     * La quantité passe de disponible → réservée.
+     *
+     * @param produitId  ID du produit
+     * @param entrepotId ID de l'entrepôt
+     * @param quantite   Quantité à réserver
+     * @param reference  Référence du document (ex: TRF-202606-XXXXX)
+     * @throws RuntimeException si stock insuffisant
+     */
+    @Transactional
+    public Stock reserverStock(Long produitId, Long entrepotId, int quantite,
+                               String reference) {
+        if (quantite <= 0)
+            throw new RuntimeException("La quantité doit être supérieure à 0");
+
+        Stock stock = stockRepository
+            .findByProduitIdAndEntrepotId(produitId, entrepotId)
+            .orElseThrow(() -> new RuntimeException(
+                "Aucun stock trouvé pour ce produit dans cet entrepôt"));
+
+        if (stock.getQuantiteDisponible() < quantite)
+            throw new RuntimeException(
+                "Stock insuffisant pour la réservation : disponible="
+                + stock.getQuantiteDisponible() + ", demandé=" + quantite);
+
+        stock.setQuantiteDisponible(stock.getQuantiteDisponible() - quantite);
+        stock.setQuantiteReservee(stock.getQuantiteReservee() + quantite);
+
+        Stock saved = stockRepository.save(stock);
+        enregistrerMouvement(saved, MouvementStock.TypeMouvement.RESERVATION,
+                quantite, reference, "Réservation pour transfert " + reference);
+        return saved;
+    }
+
+    /**
+     * Libère une réservation (annulation d'un transfert en brouillon).
+     * La quantité passe de réservée → disponible.
+     */
+    @Transactional
+    public Stock libererReservation(Long produitId, Long entrepotId, int quantite,
+                                    String reference) {
+        if (quantite <= 0)
+            throw new RuntimeException("La quantité doit être supérieure à 0");
+
+        Stock stock = stockRepository
+            .findByProduitIdAndEntrepotId(produitId, entrepotId)
+            .orElseThrow(() -> new RuntimeException(
+                "Aucun stock trouvé pour ce produit dans cet entrepôt"));
+
+        if (stock.getQuantiteReservee() < quantite)
+            throw new RuntimeException(
+                "Réservation insuffisante : réservée=" + stock.getQuantiteReservee()
+                + ", à libérer=" + quantite);
+
+        stock.setQuantiteDisponible(stock.getQuantiteDisponible() + quantite);
+        stock.setQuantiteReservee(stock.getQuantiteReservee() - quantite);
+
+        Stock saved = stockRepository.save(stock);
+        enregistrerMouvement(saved, MouvementStock.TypeMouvement.LIBERATION_RESERVATION,
+                quantite, reference, "Libération réservation transfert " + reference);
+        return saved;
+    }
+
+    /**
+     * Consomme une réservation lors de l'expédition d'un transfert.
+     * Ne fait que réduire la quantiteReservee (la disponible a déjà été
+     * réduite au moment de la réservation).
+     *
+     * Génère un mouvement TRANSFERT_SORTIE pour la traçabilité.
+     */
+    @Transactional
+    public Stock consommerReservation(Long produitId, Long entrepotId, int quantite,
+                                       String reference, String note) {
+        if (quantite <= 0)
+            throw new RuntimeException("La quantité doit être supérieure à 0");
+
+        Stock stock = stockRepository
+            .findByProduitIdAndEntrepotId(produitId, entrepotId)
+            .orElseThrow(() -> new RuntimeException(
+                "Aucun stock trouvé pour ce produit dans cet entrepôt"));
+
+        if (stock.getQuantiteReservee() < quantite)
+            throw new RuntimeException(
+                "Réservation insuffisante : réservée=" + stock.getQuantiteReservee()
+                + ", à consommer=" + quantite);
+
+        // On ne touche pas à quantiteDisponible (déjà réduit par la réservation)
+        stock.setQuantiteReservee(stock.getQuantiteReservee() - quantite);
+
+        Stock saved = stockRepository.save(stock);
+        enregistrerMouvement(saved, MouvementStock.TypeMouvement.TRANSFERT_SORTIE,
+                quantite, reference, note);
+        return saved;
+    }
     // -------------------------------------------------------
     // MÉTHODES PRIVÉES
     // -------------------------------------------------------
