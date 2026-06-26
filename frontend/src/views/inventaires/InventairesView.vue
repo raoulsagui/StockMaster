@@ -5,19 +5,18 @@
  * Affiche :
  *   - Statistiques (total, en cours, brouillons, validés)
  *   - Filtres (statut, type, texte)
- *   - Tableau paginé de tous les inventaires
+ *   - Tableau paginé des inventaires (sans colonne Progression)
  *   - Modal de création
+ *   - Modal de détail (saisie + actions)
  */
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import AppLayout            from '@/layout/AppLayout.vue'
-import InventaireStatsBar   from '@/components/inventaires/InventaireStatsBar.vue'
-import InventaireFilters    from '@/components/inventaires/InventaireFilters.vue'
-import InventaireTableRow   from '@/components/inventaires/InventaireTableRow.vue'
-import InventaireModal      from '@/components/inventaires/InventaireModal.vue'
-import inventaireService    from '@/services/inventaireService'
-
-const router = useRouter()
+import AppLayout               from '@/layout/AppLayout.vue'
+import InventaireStatsBar      from '@/components/inventaires/InventaireStatsBar.vue'
+import InventaireFilters       from '@/components/inventaires/InventaireFilters.vue'
+import InventaireTableRow      from '@/components/inventaires/InventaireTableRow.vue'
+import InventaireModal         from '@/components/inventaires/InventaireModal.vue'
+import InventaireDetailModal   from '@/components/inventaires/InventaireDetailModal.vue'
+import inventaireService       from '@/services/inventaireService'
 
 // -------------------------------------------------------
 // ÉTAT
@@ -31,28 +30,30 @@ const erreur       = ref('')
 const page         = ref(0)
 const totalPages   = ref(0)
 const totalItems   = ref(0)
-const pageSize     = 20
+const PAGE_SIZE    = 20
 
 // Filtres
 const recherche    = ref('')
 const filtreStatut = ref('')
 const filtreType   = ref('')
 
-// Modal
-const modalVisible = ref(false)
+// Modal création
+const createModalVisible = ref(false)
+
+// Modal détail
+const detailModalVisible  = ref(false)
+const inventaireDetailId  = ref(null)
 
 // -------------------------------------------------------
 // CHARGEMENT
 // -------------------------------------------------------
-onMounted(async () => {
-  await Promise.all([charger(), chargerStats()])
-})
+onMounted(() => Promise.all([charger(), chargerStats()]))
 
 async function charger() {
   isLoading.value = true
   erreur.value    = ''
   try {
-    const data = await inventaireService.findAll(page.value, pageSize)
+    const data        = await inventaireService.findAll(page.value, PAGE_SIZE)
     inventaires.value = data.content
     totalPages.value  = data.totalPages
     totalItems.value  = data.totalElements
@@ -64,11 +65,7 @@ async function charger() {
 }
 
 async function chargerStats() {
-  try {
-    stats.value = await inventaireService.getStats()
-  } catch {
-    // Stats non bloquantes
-  }
+  try { stats.value = await inventaireService.getStats() } catch { /* non bloquant */ }
 }
 
 async function changerPage(p) {
@@ -77,48 +74,46 @@ async function changerPage(p) {
 }
 
 // -------------------------------------------------------
-// FILTRES (côté client sur la page courante)
+// FILTRES côté client
 // -------------------------------------------------------
-const inventairesFiltres = computed(() => {
-  return inventaires.value.filter(inv => {
+const inventairesFiltres = computed(() =>
+  inventaires.value.filter(inv => {
     const texte = recherche.value.toLowerCase()
     const matchTexte =
       !texte ||
       inv.reference.toLowerCase().includes(texte) ||
       inv.entrepotNom.toLowerCase().includes(texte) ||
       (inv.createurNom && inv.createurNom.toLowerCase().includes(texte))
-
     const matchStatut = !filtreStatut.value || inv.statut === filtreStatut.value
     const matchType   = !filtreType.value   || inv.type   === filtreType.value
-
     return matchTexte && matchStatut && matchType
   })
-})
+)
 
 // -------------------------------------------------------
-// ACTIONS LISTE
+// ACTIONS
 // -------------------------------------------------------
-function voirDetail(id) {
-  router.push({ name: 'inventaire-detail', params: { id } })
+function ouvrirDetail(id) {
+  inventaireDetailId.value  = id
+  detailModalVisible.value  = true
 }
 
-async function demarrer(inv) {
-  if (!confirm(`Démarrer le comptage de l'inventaire ${inv.reference} ?`)) return
-  try {
-    await inventaireService.demarrer(inv.id)
-    await Promise.all([charger(), chargerStats()])
-  } catch (e) {
-    alert(e.response?.data || 'Erreur lors du démarrage.')
-  }
+function fermerDetail() {
+  detailModalVisible.value = false
+  inventaireDetailId.value = null
+}
+
+// Appelé quand le modal de détail modifie l'inventaire (demarrer/valider/annuler)
+async function apresModification() {
+  await Promise.all([charger(), chargerStats()])
 }
 
 async function annuler(inv) {
-  if (!confirm(`Annuler l'inventaire ${inv.reference} ? Aucun ajustement ne sera appliqué.`)) return
   try {
     await inventaireService.annuler(inv.id)
     await Promise.all([charger(), chargerStats()])
   } catch (e) {
-    alert(e.response?.data || 'Erreur lors de l\'annulation.')
+    alert(e.response?.data || "Erreur lors de l'annulation.")
   }
 }
 
@@ -136,10 +131,11 @@ async function apresCreation() {
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Inventaires</h1>
           <p class="text-sm text-gray-500 mt-1">
-            {{ totalItems }} inventaire{{ totalItems > 1 ? 's' : '' }} enregistré{{ totalItems > 1 ? 's' : '' }}
+            {{ totalItems }} inventaire{{ totalItems > 1 ? 's' : '' }}
+            enregistré{{ totalItems > 1 ? 's' : '' }}
           </p>
         </div>
-        <button @click="modalVisible = true" class="btn-primary">
+        <button @click="createModalVisible = true" class="btn-primary">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
           </svg>
@@ -158,7 +154,9 @@ async function apresCreation() {
       />
 
       <!-- Erreur API -->
-      <div v-if="erreur" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">{{ erreur }}</div>
+      <div v-if="erreur" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">
+        {{ erreur }}
+      </div>
 
       <!-- LOADING -->
       <div v-if="isLoading" class="card p-12 text-center text-gray-400">
@@ -171,9 +169,11 @@ async function apresCreation() {
 
       <!-- TABLEAU -->
       <div v-if="!isLoading">
-        <div v-if="inventairesFiltres.length === 0" class="card p-12 text-center text-gray-400 text-sm">
+        <div v-if="inventairesFiltres.length === 0"
+          class="card p-12 text-center text-gray-400 text-sm">
           Aucun inventaire ne correspond aux critères sélectionnés.
         </div>
+
         <div v-else class="card p-0 overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full">
@@ -182,9 +182,9 @@ async function apresCreation() {
                   <th class="table-header">Référence</th>
                   <th class="table-header">Type</th>
                   <th class="table-header">Entrepôt</th>
-                  <th class="table-header">Progression</th>
-                  <th class="table-header">Écarts</th>
-                  <th class="table-header">Date prévue</th>
+                  <th class="table-header text-center">▲ Surplus</th>
+                  <th class="table-header text-center">▼ Manque</th>
+                  <th class="table-header">Date</th>
                   <th class="table-header">Statut</th>
                   <th class="table-header text-right">Actions</th>
                 </tr>
@@ -194,8 +194,7 @@ async function apresCreation() {
                   v-for="inv in inventairesFiltres"
                   :key="inv.id"
                   :inventaire="inv"
-                  @voir="voirDetail"
-                  @demarrer="demarrer"
+                  @detail="ouvrirDetail"
                   @annuler="annuler"
                 />
               </tbody>
@@ -203,23 +202,16 @@ async function apresCreation() {
           </div>
 
           <!-- PAGINATION -->
-          <div v-if="totalPages > 1" class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-            <p class="text-sm text-gray-500">
-              Page {{ page + 1 }} sur {{ totalPages }}
-            </p>
+          <div v-if="totalPages > 1"
+            class="flex items-center justify-between px-4 py-3 border-t border-gray-100">
+            <p class="text-sm text-gray-500">Page {{ page + 1 }} sur {{ totalPages }}</p>
             <div class="flex gap-2">
-              <button
-                :disabled="page === 0"
-                @click="changerPage(page - 1)"
-                class="btn-secondary text-sm disabled:opacity-40"
-              >
+              <button :disabled="page === 0" @click="changerPage(page - 1)"
+                class="btn-secondary text-sm disabled:opacity-40">
                 ← Précédente
               </button>
-              <button
-                :disabled="page >= totalPages - 1"
-                @click="changerPage(page + 1)"
-                class="btn-secondary text-sm disabled:opacity-40"
-              >
+              <button :disabled="page >= totalPages - 1" @click="changerPage(page + 1)"
+                class="btn-secondary text-sm disabled:opacity-40">
                 Suivante →
               </button>
             </div>
@@ -231,9 +223,17 @@ async function apresCreation() {
 
     <!-- MODAL CRÉATION -->
     <InventaireModal
-      :visible="modalVisible"
-      @fermer="modalVisible = false"
+      :visible="createModalVisible"
+      @fermer="createModalVisible = false"
       @sauvegarde="apresCreation"
+    />
+
+    <!-- MODAL DÉTAIL -->
+    <InventaireDetailModal
+      :visible="detailModalVisible"
+      :inventaire-id="inventaireDetailId"
+      @fermer="fermerDetail"
+      @mis-a-jour="apresModification"
     />
 
   </AppLayout>

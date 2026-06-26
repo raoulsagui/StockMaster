@@ -199,7 +199,6 @@ async function apresReception() {
                   <th class="table-header">Référence</th>
                   <th class="table-header">Fournisseur</th>
                   <th class="table-header">Entrepôt</th>
-                  <th class="table-header text-center">Lignes / Unités</th>
                   <th class="table-header text-right">Montant HT</th>
                   <th class="table-header">Livraison prévue</th>
                   <th class="table-header">Statut</th>

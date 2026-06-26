@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  * Contient les informations de la zone ainsi que les informations
  * de base de l'entrepôt parent (id + nom).
  *
- * Les capacités (totale/utilisée) sont portées par l'entrepôt, pas par la zone.
+ * Le taux d'occupation est calculé à partir de capaciteUtilisee / capaciteTotale.
  */
 @Data
 @Builder
@@ -25,6 +25,22 @@ public class ZoneResponseDTO {
     private String description;
     private boolean actif;
     private LocalDateTime dateCreation;
+
+    // --- Capacités ---
+    /** Capacité totale de la zone en m³ (null si non définie) */
+    private Double capaciteTotale;
+
+    /** Capacité actuellement occupée en m³ */
+    private Double capaciteUtilisee;
+
+    /** Capacité libre = total - utilisée (null si capaciteTotale non définie) */
+    private Double capaciteDisponible;
+
+    /**
+     * Taux d'occupation en pourcentage (0–100).
+     * 0 si capaciteTotale non définie ou nulle.
+     */
+    private Double tauxOccupation;
 
     /**
      * Informations de base sur l'entrepôt parent.
@@ -58,6 +74,12 @@ public class ZoneResponseDTO {
                 .description(zone.getDescription())
                 .actif(zone.isActif())
                 .dateCreation(zone.getDateCreation())
+                // Capacités
+                .capaciteTotale(zone.getCapaciteTotale())
+                .capaciteUtilisee(zone.getCapaciteUtilisee())
+                .capaciteDisponible(zone.getCapaciteDisponible())
+                .tauxOccupation(Math.round(zone.getTauxOccupation() * 10.0) / 10.0)
+                // Entrepôt parent
                 .entrepot(zone.getEntrepot() != null
                         ? EntrepotInfoDTO.builder()
                                 .id(zone.getEntrepot().getId())

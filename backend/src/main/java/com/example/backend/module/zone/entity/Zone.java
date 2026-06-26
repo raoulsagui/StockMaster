@@ -65,6 +65,20 @@ public class Zone {
     private boolean actif = true;
 
     /**
+     * Capacité totale de la zone en mètres cubes (m³).
+     * Représente la surface physique disponible.
+     * Null = capacité non définie (zone sans limite mesurée).
+     */
+    private Double capaciteTotale;
+
+    /**
+     * Capacité actuellement utilisée en mètres cubes (m³).
+     * Mise à jour lors des mouvements de stock.
+     */
+    @Builder.Default
+    private Double capaciteUtilisee = 0.0;
+
+    /**
      * Entrepôt parent auquel appartient cette zone.
      *
      * Côté "Many" de la relation OneToMany avec Entrepot.
@@ -89,4 +103,27 @@ public class Zone {
         this.dateCreation = LocalDateTime.now();
     }
 
+    // -------------------------------------------------------
+    // MÉTHODES MÉTIER
+    // -------------------------------------------------------
+
+    /**
+     * Taux d'occupation de la zone en pourcentage (0–100).
+     * Retourne 0 si la capacité totale n'est pas définie ou est nulle.
+     */
+    public double getTauxOccupation() {
+        if (capaciteTotale == null || capaciteTotale == 0) return 0.0;
+        double utilise = capaciteUtilisee != null ? capaciteUtilisee : 0.0;
+        return Math.min((utilise / capaciteTotale) * 100.0, 100.0);
+    }
+
+    /**
+     * Capacité disponible restante en m³.
+     * Retourne null si la capacité totale n'est pas définie.
+     */
+    public Double getCapaciteDisponible() {
+        if (capaciteTotale == null) return null;
+        double utilise = capaciteUtilisee != null ? capaciteUtilisee : 0.0;
+        return Math.max(capaciteTotale - utilise, 0.0);
+    }
 }

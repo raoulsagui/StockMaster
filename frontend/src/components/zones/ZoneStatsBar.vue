@@ -11,9 +11,11 @@ const totalActives = computed(() => props.zones.filter(z => z.actif).length)
 const totalInactives = computed(() => totalZones.value - totalActives.value)
 
 const tauxMoyen = computed(() => {
-  if (!totalZones.value) return 0
-  const total = props.zones.reduce((acc, z) => acc + (z.tauxOccupation || 0), 0)
-  return Math.round(total / totalZones.value)
+  // On ne considère que les zones ayant une capacité définie
+  const zonesAvecCapacite = props.zones.filter(z => z.capaciteTotale != null && z.capaciteTotale > 0)
+  if (!zonesAvecCapacite.length) return null
+  const total = zonesAvecCapacite.reduce((acc, z) => acc + (z.tauxOccupation || 0), 0)
+  return Math.round(total / zonesAvecCapacite.length)
 })
 
 const kpis = computed(() => [
@@ -39,17 +41,21 @@ const kpis = computed(() => [
   },
   {
     label:      "Taux d'occupation moyen",
-    value:      tauxMoyen.value + ' %',
-    sub:        tauxMoyen.value >= 85 ? 'Saturation critique'
+    value:      tauxMoyen.value !== null ? tauxMoyen.value + ' %' : '—',
+    sub:        tauxMoyen.value === null ? 'Aucune capacité configurée'
+                : tauxMoyen.value >= 85 ? 'Saturation critique'
                 : tauxMoyen.value >= 60 ? 'Charge élevée'
                 : 'Capacité disponible',
-    color:      tauxMoyen.value >= 85 ? 'bg-red-600'
+    color:      tauxMoyen.value === null ? 'bg-gray-400'
+                : tauxMoyen.value >= 85 ? 'bg-red-600'
                 : tauxMoyen.value >= 60 ? 'bg-orange-500'
                 : 'bg-green-600',
-    subColor:   tauxMoyen.value >= 85 ? 'text-red-500'
+    subColor:   tauxMoyen.value === null ? 'text-gray-400'
+                : tauxMoyen.value >= 85 ? 'text-red-500'
                 : tauxMoyen.value >= 60 ? 'text-orange-400'
                 : 'text-green-500',
-    valueColor: tauxMoyen.value >= 85 ? 'text-red-600'
+    valueColor: tauxMoyen.value === null ? 'text-gray-400'
+                : tauxMoyen.value >= 85 ? 'text-red-600'
                 : tauxMoyen.value >= 60 ? 'text-orange-500'
                 : 'text-green-600',
     icon:       'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',

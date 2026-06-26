@@ -1,24 +1,42 @@
 <script setup>
 /**
  * Ligne du tableau d'inventaires.
- * Affiche les informations clés et les actions disponibles selon le statut.
+ * Actions disponibles : Détail (modal), Annuler.
  */
 defineProps({
   inventaire: { type: Object, required: true },
 })
 
-defineEmits(['voir', 'demarrer', 'annuler'])
+defineEmits(['detail', 'annuler'])
 
 const statutConfig = {
-  BROUILLON: { label: 'Brouillon',  classes: 'badge-yellow' },
-  EN_COURS:  { label: 'En cours',   classes: 'badge-blue'   },
-  VALIDE:    { label: 'Validé',     classes: 'badge-green'  },
-  ANNULE:    { label: 'Annulé',     classes: 'badge-red'    },
+  BROUILLON: { label: 'Brouillon', classes: 'bg-yellow-100 text-yellow-700' },
+  EN_COURS:  { label: 'En cours',  classes: 'bg-blue-100 text-blue-700'     },
+  VALIDE:    { label: 'Validé',    classes: 'bg-green-100 text-green-700'   },
+  ANNULE:    { label: 'Annulé',    classes: 'bg-red-100 text-red-600'       },
 }
 
 const typeConfig = {
-  COMPLET: { label: 'Complet',  classes: 'badge-gray'  },
-  PARTIEL: { label: 'Partiel',  classes: 'badge-purple' },
+  COMPLET: { label: 'Complet', classes: 'bg-gray-100 text-gray-600'    },
+  PARTIEL: { label: 'Partiel', classes: 'bg-purple-100 text-purple-700' },
+}
+
+/**
+ * Retourne la date pertinente selon le statut de l'inventaire.
+ *   VALIDE   → dateValidation (date réelle de clôture)
+ *   Autres   → dateCreation   (date de création / démarrage)
+ */
+function dateInventaire(inv) {
+  const raw = inv.statut === 'VALIDE' ? inv.dateValidation : inv.dateCreation
+  if (!raw) return '—'
+  return new Date(raw).toLocaleDateString('fr-FR')
+}
+
+/**
+ * Libellé de la colonne date selon le statut.
+ */
+function libelleDate(statut) {
+  return statut === 'VALIDE' ? 'Validé le' : 'Créé le'
 }
 </script>
 
@@ -27,12 +45,13 @@ const typeConfig = {
 
     <!-- Référence -->
     <td class="table-cell">
-      <span class="font-mono text-sm font-medium text-gray-900">{{ inventaire.reference }}</span>
+      <span class="font-mono text-sm font-semibold text-gray-900">{{ inventaire.reference }}</span>
     </td>
 
     <!-- Type -->
     <td class="table-cell">
-      <span :class="typeConfig[inventaire.type]?.classes ?? 'badge-gray'" class="badge">
+      <span :class="[typeConfig[inventaire.type]?.classes ?? 'bg-gray-100 text-gray-600',
+        'px-2.5 py-0.5 rounded-full text-xs font-medium']">
         {{ typeConfig[inventaire.type]?.label ?? inventaire.type }}
       </span>
     </td>
@@ -40,39 +59,38 @@ const typeConfig = {
     <!-- Entrepôt -->
     <td class="table-cell text-sm text-gray-700">{{ inventaire.entrepotNom }}</td>
 
-    <!-- Progression -->
-    <td class="table-cell">
-      <span class="text-sm text-gray-700 font-mono">
-        {{ inventaire.nombreLignesComptees }}/{{ inventaire.nombreLignes }}
+    <!-- Surplus (écart positif) -->
+    <td class="table-cell text-center">
+      <span
+        v-if="inventaire.nombreLignesEcartPositif > 0"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700"
+      >
+        ▲ {{ inventaire.nombreLignesEcartPositif }}
       </span>
-      <p class="text-xs text-gray-400 mt-0.5">lignes</p>
+      <span v-else class="text-xs text-gray-300">—</span>
     </td>
 
-    <!-- Écarts -->
-    <td class="table-cell text-sm">
-      <div v-if="inventaire.nombreLignesAvecEcart > 0" class="space-y-0.5">
-        <div v-if="inventaire.nombreLignesEcartPositif > 0"
-          class="flex items-center gap-1 text-green-600 text-xs">
-          <span>▲</span>
-          <span>{{ inventaire.nombreLignesEcartPositif }} surplus</span>
-        </div>
-        <div v-if="inventaire.nombreLignesEcartNegatif > 0"
-          class="flex items-center gap-1 text-red-600 text-xs">
-          <span>▼</span>
-          <span>{{ inventaire.nombreLignesEcartNegatif }} manque(s)</span>
-        </div>
-      </div>
-      <span v-else class="text-xs text-gray-400">—</span>
+    <!-- Manque (écart négatif) -->
+    <td class="table-cell text-center">
+      <span
+        v-if="inventaire.nombreLignesEcartNegatif > 0"
+        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700"
+      >
+        ▼ {{ inventaire.nombreLignesEcartNegatif }}
+      </span>
+      <span v-else class="text-xs text-gray-300">—</span>
     </td>
 
-    <!-- Date prévue -->
+    <!-- Date réelle de l'inventaire -->
     <td class="table-cell text-sm text-gray-500">
-      {{ new Date(inventaire.datePrevue).toLocaleDateString('fr-FR') }}
+      <p>{{ dateInventaire(inventaire) }}</p>
+      <p class="text-xs text-gray-400">{{ libelleDate(inventaire.statut) }}</p>
     </td>
 
     <!-- Statut -->
     <td class="table-cell">
-      <span :class="statutConfig[inventaire.statut]?.classes ?? 'badge-gray'" class="badge">
+      <span :class="[statutConfig[inventaire.statut]?.classes ?? 'bg-gray-100 text-gray-600',
+        'px-2.5 py-0.5 rounded-full text-xs font-semibold']">
         {{ statutConfig[inventaire.statut]?.label ?? inventaire.statut }}
       </span>
     </td>
@@ -81,9 +99,9 @@ const typeConfig = {
     <td class="table-cell text-right">
       <div class="flex items-center justify-end gap-1">
 
-        <!-- Voir le détail -->
+        <!-- Détail -->
         <button
-          @click="$emit('voir', inventaire.id)"
+          @click="$emit('detail', inventaire.id)"
           class="btn-icon text-blue-600 hover:bg-blue-50"
           title="Voir le détail"
         >
@@ -95,31 +113,15 @@ const typeConfig = {
           </svg>
         </button>
 
-        <!-- Démarrer (si brouillon) -->
+        <!-- Annuler -->
         <button
-          v-if="inventaire.statut === 'BROUILLON'"
-          @click="$emit('demarrer', inventaire)"
-          class="btn-icon text-blue-600 hover:bg-blue-50"
-          title="Démarrer le comptage"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-        </button>
-
-        <!-- Annuler (si brouillon ou en cours) -->
-        <button
-          v-if="inventaire.statut === 'BROUILLON' || inventaire.statut === 'EN_COURS'"
+          v-if="['BROUILLON', 'EN_COURS'].includes(inventaire.statut)"
           @click="$emit('annuler', inventaire)"
           class="btn-icon text-red-500 hover:bg-red-50"
           title="Annuler l'inventaire"
         >
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M6 18L18 6M6 6l12 12"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
 

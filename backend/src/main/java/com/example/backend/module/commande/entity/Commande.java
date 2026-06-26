@@ -148,15 +148,6 @@ public class Commande {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    /**
-     * Nombre total d'unités commandées (somme des quantités).
-     */
-    public int getNombreUnites() {
-        return lignes.stream()
-                .mapToInt(LigneCommande::getQuantiteCommandee)
-                .sum();
-    }
-
     // -------------------------------------------------------
     // ENUMS
     // -------------------------------------------------------

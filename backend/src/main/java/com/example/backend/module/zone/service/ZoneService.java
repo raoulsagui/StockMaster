@@ -97,11 +97,21 @@ public class ZoneService {
             );
         }
 
+        // Règle 3 : cohérence capaciteUtilisee <= capaciteTotale (si les deux sont fournis)
+        if (dto.getCapaciteTotale() != null && dto.getCapaciteUtilisee() != null
+                && dto.getCapaciteUtilisee() > dto.getCapaciteTotale()) {
+            throw new RuntimeException(
+                "La capacité utilisée ne peut pas dépasser la capacité totale"
+            );
+        }
+
         Zone zone = Zone.builder()
                 .nom(dto.getNom())
                 .type(dto.getType())
                 .description(dto.getDescription())
                 .entrepot(entrepot)
+                .capaciteTotale(dto.getCapaciteTotale())
+                .capaciteUtilisee(dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0)
                 .actif(true)
                 .build();
 
@@ -142,10 +152,22 @@ public class ZoneService {
             );
         }
 
+        // Règle 4 : cohérence capaciteUtilisee <= capaciteTotale
+        if (dto.getCapaciteTotale() != null && dto.getCapaciteUtilisee() != null
+                && dto.getCapaciteUtilisee() > dto.getCapaciteTotale()) {
+            throw new RuntimeException(
+                "La capacité utilisée ne peut pas dépasser la capacité totale"
+            );
+        }
+
         zone.setNom(dto.getNom());
         zone.setType(dto.getType());
         zone.setDescription(dto.getDescription());
         zone.setEntrepot(entrepot);
+        zone.setCapaciteTotale(dto.getCapaciteTotale());
+        if (dto.getCapaciteUtilisee() != null) {
+            zone.setCapaciteUtilisee(dto.getCapaciteUtilisee());
+        }
 
         Zone saved = zoneRepository.save(zone);
         return ZoneResponseDTO.fromEntity(saved);

@@ -252,18 +252,8 @@ function formatMontant(m) {
         </div>
 
         <!-- MÉTRIQUES -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 gap-4">
           <div class="card p-4">
-            <p class="text-xs text-gray-500 uppercase font-medium">Lignes</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ commande.nombreLignes }}</p>
-            <p class="text-xs text-gray-400 mt-1">références produit</p>
-          </div>
-          <div class="card p-4">
-            <p class="text-xs text-gray-500 uppercase font-medium">Unités</p>
-            <p class="text-2xl font-bold text-gray-900 mt-1">{{ commande.nombreUnites }}</p>
-            <p class="text-xs text-gray-400 mt-1">articles commandés</p>
-          </div>
-          <div class="card p-4 col-span-2">
             <p class="text-xs text-gray-500 uppercase font-medium">Montant total HT</p>
             <p class="text-2xl font-bold text-gray-900 mt-1 font-mono">
               {{ formatMontant(commande.montantTotal) }}

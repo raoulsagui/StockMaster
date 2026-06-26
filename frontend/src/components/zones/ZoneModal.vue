@@ -32,10 +32,12 @@ const isEditing = computed(() => props.zoneId !== null)
 // ÉTAT
 // -------------------------------------------------------
 const form = ref({
-  nom:         '',
-  type:        '',
-  description: '',
-  entrepotId:  null,
+  nom:              '',
+  type:             '',
+  description:      '',
+  entrepotId:       null,
+  capaciteTotale:   '',
+  capaciteUtilisee: '',
 })
 
 const entrepots = ref([])
@@ -57,20 +59,24 @@ watch(() => props.visible, async (val) => {
     try {
       const data = await zoneService.findById(props.zoneId)
       form.value = {
-        nom:         data.nom,
-        type:        data.type,
-        description: data.description || '',
-        entrepotId:  data.entrepot?.id ?? null,
+        nom:              data.nom,
+        type:             data.type,
+        description:      data.description || '',
+        entrepotId:       data.entrepot?.id ?? null,
+        capaciteTotale:   data.capaciteTotale ?? '',
+        capaciteUtilisee: data.capaciteUtilisee ?? '',
       }
     } catch {
       erreurApi.value = 'Impossible de charger cette zone.'
     }
   } else {
     form.value = {
-      nom:         '',
-      type:        '',
-      description: '',
-      entrepotId:  props.entrepotId ? Number(props.entrepotId) : null,
+      nom:              '',
+      type:             '',
+      description:      '',
+      entrepotId:       props.entrepotId ? Number(props.entrepotId) : null,
+      capaciteTotale:   '',
+      capaciteUtilisee: '',
     }
   }
 })
@@ -90,6 +96,18 @@ const valider = () => {
   if (!form.value.entrepotId)
     erreurs.value.entrepotId = "L'entrepôt est obligatoire."
 
+  const total   = parseFloat(form.value.capaciteTotale)
+  const utilise = parseFloat(form.value.capaciteUtilisee)
+
+  if (form.value.capaciteTotale !== '' && (isNaN(total) || total <= 0))
+    erreurs.value.capaciteTotale = 'La capacité totale doit être supérieure à 0.'
+
+  if (form.value.capaciteUtilisee !== '' && (isNaN(utilise) || utilise < 0))
+    erreurs.value.capaciteUtilisee = 'La capacité utilisée ne peut pas être négative.'
+
+  if (!isNaN(total) && !isNaN(utilise) && utilise > total)
+    erreurs.value.capaciteUtilisee = 'La capacité utilisée ne peut pas dépasser la capacité totale.'
+
   return Object.keys(erreurs.value).length === 0
 }
 
@@ -103,10 +121,12 @@ const soumettre = async () => {
 
   try {
     const payload = {
-      nom:         form.value.nom.trim(),
-      type:        form.value.type,
-      description: form.value.description?.trim() || null,
-      entrepotId:  form.value.entrepotId,
+      nom:              form.value.nom.trim(),
+      type:             form.value.type,
+      description:      form.value.description?.trim() || null,
+      entrepotId:       form.value.entrepotId,
+      capaciteTotale:   form.value.capaciteTotale !== '' ? parseFloat(form.value.capaciteTotale) : null,
+      capaciteUtilisee: form.value.capaciteUtilisee !== '' ? parseFloat(form.value.capaciteUtilisee) : null,
     }
 
     if (isEditing.value) {
@@ -209,6 +229,59 @@ const soumettre = async () => {
                 placeholder="Ex : Zone réfrigérée pour produits frais, température 2–8°C"
                 class="form-input resize-none"
               ></textarea>
+            </div>
+
+            <!-- Capacités -->
+            <div class="border-t border-gray-100 pt-4">
+              <p class="text-sm font-medium text-gray-700 mb-3">
+                Capacité de stockage
+                <span class="text-xs font-normal text-gray-400 ml-1">(optionnel)</span>
+              </p>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label">Capacité totale (m³)</label>
+                  <input
+                    v-model="form.capaciteTotale"
+                    type="number" min="0.1" step="0.1"
+                    placeholder="Ex : 500"
+                    :class="['form-input', erreurs.capaciteTotale ? 'border-red-400 focus:ring-red-400' : '']"
+                  />
+                  <p v-if="erreurs.capaciteTotale" class="form-error">{{ erreurs.capaciteTotale }}</p>
+                </div>
+                <div>
+                  <label class="form-label">Capacité utilisée (m³)</label>
+                  <input
+                    v-model="form.capaciteUtilisee"
+                    type="number" min="0" step="0.1"
+                    placeholder="Ex : 120"
+                    :class="['form-input', erreurs.capaciteUtilisee ? 'border-red-400 focus:ring-red-400' : '']"
+                  />
+                  <p v-if="erreurs.capaciteUtilisee" class="form-error">{{ erreurs.capaciteUtilisee }}</p>
+                </div>
+              </div>
+              <!-- Barre de prévisualisation du taux si les deux champs sont renseignés -->
+              <div
+                v-if="form.capaciteTotale && form.capaciteUtilisee && parseFloat(form.capaciteTotale) > 0"
+                class="mt-3"
+              >
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-500">Taux d'occupation</span>
+                  <span class="text-xs font-semibold text-gray-700">
+                    {{ Math.min(Math.round((parseFloat(form.capaciteUtilisee) / parseFloat(form.capaciteTotale)) * 100), 100) }} %
+                  </span>
+                </div>
+                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    :class="[
+                      'h-full rounded-full transition-all duration-300',
+                      (parseFloat(form.capaciteUtilisee) / parseFloat(form.capaciteTotale)) >= 0.85 ? 'bg-red-500'
+                      : (parseFloat(form.capaciteUtilisee) / parseFloat(form.capaciteTotale)) >= 0.60 ? 'bg-orange-400'
+                      : 'bg-green-500',
+                    ]"
+                    :style="{ width: Math.min((parseFloat(form.capaciteUtilisee) / parseFloat(form.capaciteTotale)) * 100, 100) + '%' }"
+                  ></div>
+                </div>
+              </div>
             </div>
 
             <!-- Boutons -->

@@ -73,6 +73,11 @@ function getCouleurTaux(taux) {
 function formatCapacite(val) {
   return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
 }
+
+/** true si la zone a une capacité totale définie */
+function aCapacite(zone) {
+  return zone.capaciteTotale != null && zone.capaciteTotale > 0
+}
 </script>
 
 <template>
@@ -105,17 +110,23 @@ function formatCapacite(val) {
 
     <!-- Barre d'occupation + taux numérique -->
     <td class="table-cell w-44">
-      <div class="flex items-center gap-2">
-        <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            :class="['h-1.5 rounded-full transition-all duration-500', getCouleurBarre(zone.tauxOccupation)]"
-            :style="{ width: Math.min(zone.tauxOccupation, 100) + '%' }"
-          ></div>
+      <template v-if="aCapacite(zone)">
+        <div class="flex items-center gap-2">
+          <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div
+              :class="['h-1.5 rounded-full transition-all duration-500', getCouleurBarre(zone.tauxOccupation)]"
+              :style="{ width: Math.min(zone.tauxOccupation, 100) + '%' }"
+            ></div>
+          </div>
+          <span :class="['text-xs font-semibold w-10 text-right', getCouleurTaux(zone.tauxOccupation)]">
+            {{ zone.tauxOccupation }} %
+          </span>
         </div>
-        <span :class="['text-xs font-semibold w-10 text-right', getCouleurTaux(zone.tauxOccupation)]">
-          {{ zone.tauxOccupation }} %
-        </span>
-      </div>
+        <p class="text-xs text-gray-400 mt-0.5">
+          {{ formatCapacite(zone.capaciteUtilisee) }} / {{ formatCapacite(zone.capaciteTotale) }}
+        </p>
+      </template>
+      <span v-else class="text-xs text-gray-400 italic">Non définie</span>
     </td>
 
     <!-- Badge statut -->

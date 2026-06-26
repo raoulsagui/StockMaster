@@ -54,12 +54,6 @@ public class CommandeResponseDTO {
     private String note;
 
     // --- Métriques calculées ---
-    /** Nombre de lignes dans la commande */
-    private int nombreLignes;
-
-    /** Nombre total d'unités commandées */
-    private int nombreUnites;
-
     /** Montant total HT de la commande */
     private BigDecimal montantTotal;
 
@@ -100,8 +94,6 @@ public class CommandeResponseDTO {
                 .dateCreation(c.getDateCreation())
                 .note(c.getNote())
                 // Métriques
-                .nombreLignes(c.getLignes().size())
-                .nombreUnites(c.getNombreUnites())
                 .montantTotal(c.getMontantTotal())
                 .build();
     }

@@ -47,12 +47,6 @@ function formatMontant(m) {
     <!-- Entrepôt -->
     <td class="table-cell text-sm text-gray-700">{{ commande.entrepotNom }}</td>
 
-    <!-- Lignes / Unités -->
-    <td class="table-cell text-center">
-      <p class="text-sm font-medium text-gray-900">{{ commande.nombreLignes }} ligne{{ commande.nombreLignes > 1 ? 's' : '' }}</p>
-      <p class="text-xs text-gray-400">{{ commande.nombreUnites }} unité{{ commande.nombreUnites > 1 ? 's' : '' }}</p>
-    </td>
-
     <!-- Montant total -->
     <td class="table-cell text-right">
       <span class="text-sm font-mono font-medium text-gray-800">
