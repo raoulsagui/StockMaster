@@ -1,12 +1,10 @@
 package com.example.backend.module.inventaire.dto;
 
 import com.example.backend.module.inventaire.entity.Inventaire;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -27,10 +25,6 @@ public class InventaireRequestDTO {
 
     @NotNull(message = "L'entrepôt est obligatoire")
     private Long entrepotId;
-
-    @NotNull(message = "La date prévue est obligatoire")
-    @FutureOrPresent(message = "La date prévue ne peut pas être dans le passé")
-    private LocalDate datePrevue;
 
     @Size(max = 1000, message = "La note ne peut pas dépasser 1000 caractères")
     private String note;

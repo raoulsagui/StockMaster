@@ -32,12 +32,13 @@ watch(() => props.visible, (open) => {
   if (!open || !props.commande) return
   erreur.value = ''
   note.value   = ''
-  lignesRecues.value = props.commande.lignes.map(l => ({
-    ligneId:          l.id,
-    produitNom:       l.produitNom,
-    produitReference: l.produitReference,
+  const lignes = props.commande.lignes ?? []
+  lignesRecues.value = lignes.map(l => ({
+    ligneId:           l.id,
+    produitNom:        l.produitNom,
+    produitReference:  l.produitReference,
     quantiteCommandee: l.quantiteCommandee,
-    quantiteRecue:    l.quantiteCommandee, // pré-remplit avec la quantité commandée
+    quantiteRecue:     l.quantiteCommandee,
   }))
 })
 

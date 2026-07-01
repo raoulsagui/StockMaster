@@ -4,7 +4,6 @@ import com.example.backend.module.inventaire.entity.Inventaire;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -37,7 +36,6 @@ public class InventaireResponseDTO {
     private String valideurNom;
 
     // --- Dates ---
-    private LocalDate datePrevue;
     private LocalDateTime dateValidation;
     private LocalDateTime dateCreation;
 
@@ -90,7 +88,6 @@ public class InventaireResponseDTO {
                     ? inv.getValideur().getPrenom() + " " + inv.getValideur().getNom()
                     : null)
                 // Dates
-                .datePrevue(inv.getDatePrevue())
                 .dateValidation(inv.getDateValidation())
                 .dateCreation(inv.getDateCreation())
                 .note(inv.getNote())

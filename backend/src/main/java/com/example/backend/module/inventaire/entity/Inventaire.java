@@ -5,7 +5,6 @@ import com.example.backend.module.utilisateur.entity.Utilisateur;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,12 +81,6 @@ public class Inventaire {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "valideur_id")
     private Utilisateur valideur;
-
-    /**
-     * Date planifiée de l'inventaire.
-     */
-    @Column(nullable = false)
-    private LocalDate datePrevue;
 
     /**
      * Date de validation effective.

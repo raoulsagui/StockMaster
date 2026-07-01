@@ -146,7 +146,6 @@ public class InventaireService {
                 .statut(Inventaire.StatutInventaire.BROUILLON)
                 .entrepot(entrepot)
                 .createur(createur)
-                .datePrevue(dto.getDatePrevue())
                 .note(dto.getNote())
                 .build();
 

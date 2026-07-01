@@ -241,9 +241,6 @@ const statutConfig = {
             <p class="text-sm text-gray-500 mt-1">
               Entrepôt : <span class="font-medium text-gray-700">{{ inventaire.entrepotNom }}</span>
               · Créé par <span class="font-medium text-gray-700">{{ inventaire.createurNom }}</span>
-              · Date prévue : <span class="font-medium text-gray-700">
-                {{ new Date(inventaire.datePrevue).toLocaleDateString('fr-FR') }}
-              </span>
             </p>
             <p v-if="inventaire.valideurNom" class="text-sm text-gray-500 mt-0.5">
               Validé par <span class="font-medium text-gray-700">{{ inventaire.valideurNom }}</span>

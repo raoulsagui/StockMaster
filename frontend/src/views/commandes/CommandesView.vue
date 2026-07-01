@@ -18,6 +18,7 @@ import CommandeFilters    from '@/components/commandes/CommandeFilters.vue'
 import CommandeTableRow   from '@/components/commandes/CommandeTableRow.vue'
 import CommandeModal      from '@/components/commandes/CommandeModal.vue'
 import ReceptionModal     from '@/components/commandes/ReceptionModal.vue'
+import ConfirmModal       from '@/components/commun/ConfirmModal.vue'
 import commandeService    from '@/services/commandeService'
 
 const router    = useRouter()
@@ -46,8 +47,42 @@ const modalVisible    = ref(false)
 const commandeEditeeId = ref(null)
 
 // Modal réception
-const receptionVisible  = ref(false)
-const commandeAReceptionner = ref(null)
+const receptionVisible       = ref(false)
+const commandeAReceptionner  = ref(null)
+const receptionLoading       = ref(false)
+
+// Modal confirmation
+const confirmModal = ref({
+  visible:  false,
+  titre:    '',
+  message:  '',
+  type:     'danger',
+  erreur:   '',
+  loading:  false,
+  action:   null, // fonction à exécuter si confirmé
+})
+
+function ouvrirConfirm({ titre, message, type = 'danger', action }) {
+  confirmModal.value = { visible: true, titre, message, type, erreur: '', loading: false, action }
+}
+
+function fermerConfirm() {
+  confirmModal.value.visible = false
+  confirmModal.value.erreur  = ''
+}
+
+async function executerConfirm() {
+  confirmModal.value.loading = true
+  confirmModal.value.erreur  = ''
+  try {
+    await confirmModal.value.action()
+    fermerConfirm()
+  } catch (e) {
+    confirmModal.value.erreur = e.response?.data || 'Une erreur est survenue.'
+  } finally {
+    confirmModal.value.loading = false
+  }
+}
 
 // -------------------------------------------------------
 // CHARGEMENT
@@ -106,29 +141,41 @@ function ouvrirCreation() {
   modalVisible.value     = true
 }
 
-async function valider(commande) {
-  if (!confirm(`Valider la commande ${commande.reference} ?\n\nElle sera transmise au fournisseur et ne pourra plus être modifiée.`)) return
+function valider(commande) {
+  ouvrirConfirm({
+    titre:   'Valider la commande',
+    message: `Valider la commande ${commande.reference} ? Elle sera transmise au fournisseur et ne pourra plus être modifiée.`,
+    type:    'info',
+    action:  async () => {
+      await commandeService.valider(commande.id)
+      await Promise.all([charger(), chargerStats()])
+    },
+  })
+}
+
+async function ouvrirReception(commande) {
+  receptionLoading.value = true
   try {
-    await commandeService.valider(commande.id)
-    await Promise.all([charger(), chargerStats()])
-  } catch (e) {
-    alert(e.response?.data || 'Erreur lors de la validation.')
+    // Charge la commande complète avec ses lignes avant d'ouvrir le modal
+    commandeAReceptionner.value = await commandeService.findById(commande.id)
+    receptionVisible.value      = true
+  } catch {
+    erreur.value = 'Impossible de charger les détails de la commande.'
+  } finally {
+    receptionLoading.value = false
   }
 }
 
-function ouvrirReception(commande) {
-  commandeAReceptionner.value = commande
-  receptionVisible.value      = true
-}
-
-async function annuler(commande) {
-  if (!confirm(`Annuler la commande ${commande.reference} ?\n\nAucun mouvement de stock ne sera généré.`)) return
-  try {
-    await commandeService.annuler(commande.id)
-    await Promise.all([charger(), chargerStats()])
-  } catch (e) {
-    alert(e.response?.data || 'Erreur lors de l\'annulation.')
-  }
+function annuler(commande) {
+  ouvrirConfirm({
+    titre:   'Annuler la commande',
+    message: `Annuler la commande ${commande.reference} ? Aucun mouvement de stock ne sera généré.`,
+    type:    'danger',
+    action:  async () => {
+      await commandeService.annuler(commande.id)
+      await Promise.all([charger(), chargerStats()])
+    },
+  })
 }
 
 async function apresEnregistrement() {
@@ -253,6 +300,18 @@ async function apresReception() {
       :commande="commandeAReceptionner"
       @fermer="receptionVisible = false"
       @receptionnee="apresReception"
+    />
+
+    <!-- MODAL CONFIRMATION -->
+    <ConfirmModal
+      :visible="confirmModal.visible"
+      :titre="confirmModal.titre"
+      :message="confirmModal.message"
+      :type="confirmModal.type"
+      :erreur="confirmModal.erreur"
+      :loading="confirmModal.loading"
+      @confirmer="executerConfirm"
+      @annuler="fermerConfirm"
     />
 
   </AppLayout>

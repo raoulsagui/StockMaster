@@ -18,6 +18,7 @@ import java.util.List;
 @Builder
 public class RapportInventaireDTO {
 
+    private Long id;
     private String reference;
     private String type;
     private String statut;
@@ -73,6 +74,7 @@ public class RapportInventaireDTO {
                 .toList();
 
         return RapportInventaireDTO.builder()
+                .id(inv.getId())
                 .reference(inv.getReference())
                 .type(inv.getType().name())
                 .statut(inv.getStatut().name())

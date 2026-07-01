@@ -16,6 +16,7 @@ import { useAuthStore } from '@/stores/authStore'
 import AppLayout      from '@/layout/AppLayout.vue'
 import CommandeModal  from '@/components/commandes/CommandeModal.vue'
 import ReceptionModal from '@/components/commandes/ReceptionModal.vue'
+import ConfirmModal   from '@/components/commun/ConfirmModal.vue'
 import commandeService from '@/services/commandeService'
 
 const route     = useRoute()
@@ -25,12 +26,43 @@ const authStore = useAuthStore()
 const commande       = ref(null)
 const isLoading      = ref(false)
 const erreur         = ref('')
-const actionErreur   = ref('')
-const actionLoading  = ref(false)
 
 // Modals
 const editModalVisible      = ref(false)
 const receptionModalVisible = ref(false)
+
+// Modal confirmation
+const confirmModal = ref({
+  visible:  false,
+  titre:    '',
+  message:  '',
+  type:     'danger',
+  erreur:   '',
+  loading:  false,
+  action:   null,
+})
+
+function ouvrirConfirm({ titre, message, type = 'danger', action }) {
+  confirmModal.value = { visible: true, titre, message, type, erreur: '', loading: false, action }
+}
+
+function fermerConfirm() {
+  confirmModal.value.visible = false
+  confirmModal.value.erreur  = ''
+}
+
+async function executerConfirm() {
+  confirmModal.value.loading = true
+  confirmModal.value.erreur  = ''
+  try {
+    await confirmModal.value.action()
+    fermerConfirm()
+  } catch (e) {
+    confirmModal.value.erreur = e.response?.data || 'Une erreur est survenue.'
+  } finally {
+    confirmModal.value.loading = false
+  }
+}
 
 // -------------------------------------------------------
 // CHARGEMENT
@@ -70,30 +102,26 @@ const peutAnnuler      = computed(() =>
 // -------------------------------------------------------
 // ACTIONS
 // -------------------------------------------------------
-async function valider() {
-  if (!confirm(`Valider la commande ${commande.value.reference} ?\n\nElle sera verrouillée et transmise au fournisseur.`)) return
-  actionLoading.value = true
-  actionErreur.value  = ''
-  try {
-    commande.value = await commandeService.valider(commande.value.id)
-  } catch (e) {
-    actionErreur.value = e.response?.data || 'Erreur lors de la validation.'
-  } finally {
-    actionLoading.value = false
-  }
+function valider() {
+  ouvrirConfirm({
+    titre:   'Valider la commande',
+    message: `Valider la commande ${commande.value.reference} ? Elle sera verrouillée et transmise au fournisseur.`,
+    type:    'info',
+    action:  async () => {
+      commande.value = await commandeService.valider(commande.value.id)
+    },
+  })
 }
 
-async function annuler() {
-  if (!confirm(`Annuler la commande ${commande.value.reference} ? Aucun stock ne sera modifié.`)) return
-  actionLoading.value = true
-  actionErreur.value  = ''
-  try {
-    commande.value = await commandeService.annuler(commande.value.id)
-  } catch (e) {
-    actionErreur.value = e.response?.data || 'Erreur lors de l\'annulation.'
-  } finally {
-    actionLoading.value = false
-  }
+function annuler() {
+  ouvrirConfirm({
+    titre:   'Annuler la commande',
+    message: `Annuler la commande ${commande.value.reference} ? Aucun stock ne sera modifié.`,
+    type:    'danger',
+    action:  async () => {
+      commande.value = await commandeService.annuler(commande.value.id)
+    },
+  })
 }
 
 async function apresModification(updated) {
@@ -210,8 +238,7 @@ function formatMontant(m) {
             <button
               v-if="peutValider"
               @click="valider"
-              :disabled="actionLoading"
-              class="btn-primary disabled:opacity-50"
+              class="btn-primary"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -222,8 +249,7 @@ function formatMontant(m) {
             <button
               v-if="peutReceptionner"
               @click="receptionModalVisible = true"
-              :disabled="actionLoading"
-              class="btn-success disabled:opacity-50"
+              class="btn-success"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -235,8 +261,7 @@ function formatMontant(m) {
             <button
               v-if="peutAnnuler"
               @click="annuler"
-              :disabled="actionLoading"
-              class="btn-danger disabled:opacity-50"
+              class="btn-danger"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -247,8 +272,8 @@ function formatMontant(m) {
         </div>
 
         <!-- Erreur action -->
-        <div v-if="actionErreur" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">
-          {{ actionErreur }}
+        <div v-if="confirmModal.erreur && !confirmModal.visible" class="card border-red-200 bg-red-50 text-red-700 text-sm p-4">
+          {{ confirmModal.erreur }}
         </div>
 
         <!-- MÉTRIQUES -->
@@ -393,6 +418,18 @@ function formatMontant(m) {
       :commande="commande"
       @fermer="receptionModalVisible = false"
       @receptionnee="apresReception"
+    />
+
+    <!-- MODAL CONFIRMATION -->
+    <ConfirmModal
+      :visible="confirmModal.visible"
+      :titre="confirmModal.titre"
+      :message="confirmModal.message"
+      :type="confirmModal.type"
+      :erreur="confirmModal.erreur"
+      :loading="confirmModal.loading"
+      @confirmer="executerConfirm"
+      @annuler="fermerConfirm"
     />
 
   </AppLayout>

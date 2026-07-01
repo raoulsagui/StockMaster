@@ -26,7 +26,6 @@ const emit = defineEmits(['fermer', 'sauvegarde'])
 const form = ref({
   type:         'COMPLET',
   entrepotId:   null,
-  datePrevue:   '',
   note:         '',
   produitsIds:  [],
 })
@@ -71,7 +70,7 @@ watch(() => form.value.entrepotId, async (entrepotId) => {
 // SOUMISSION
 // -------------------------------------------------------
 const peutSoumettre = computed(() => {
-  if (!form.value.entrepotId || !form.value.datePrevue) return false
+  if (!form.value.entrepotId) return false
   if (form.value.type === 'PARTIEL' && form.value.produitsIds.length === 0) return false
   return true
 })
@@ -83,7 +82,6 @@ async function soumettre() {
     const payload = {
       type:        form.value.type,
       entrepotId:  Number(form.value.entrepotId),
-      datePrevue:  form.value.datePrevue,
       note:        form.value.note || null,
       produitsIds: form.value.type === 'PARTIEL' ? form.value.produitsIds : undefined,
     }
@@ -99,7 +97,7 @@ async function soumettre() {
 
 function fermer() {
   Object.assign(form.value, {
-    type: 'COMPLET', entrepotId: null, datePrevue: '', note: '', produitsIds: [],
+    type: 'COMPLET', entrepotId: null, note: '', produitsIds: [],
   })
   erreur.value = ''
   emit('fermer')
@@ -195,12 +193,6 @@ function toggleTousProduits() {
                 <option :value="null" disabled>Choisir un entrepôt…</option>
                 <option v-for="e in entrepots" :key="e.id" :value="e.id">{{ e.nom }}</option>
               </select>
-            </div>
-
-            <!-- Date prévue -->
-            <div>
-              <label class="form-label">Date prévue <span class="text-red-500">*</span></label>
-              <input type="date" v-model="form.datePrevue" class="form-input" />
             </div>
 
             <!-- Note -->
