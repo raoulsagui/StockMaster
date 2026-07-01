@@ -123,6 +123,19 @@
 			<artifactId>openpdf</artifactId>
 			<version>2.0.3</version>
 		</dependency>
+		<!-- Hibernate Envers : audit/traçabilité automatique des entités -->
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+			<artifactId>hibernate-envers</artifactId>
+		</dependency>
+
+		<!-- ZXing : génération et lecture de codes-barres QR Code -->
+		<dependency>
+			<groupId>com.google.zxing</groupId>
+			<artifactId>core</artifactId>
+			<version>3.5.3</version>
+		</dependency>
+
 		<!-- Dépendances BDD-->
 		<dependency>
     		<groupId>com.mysql</groupId>

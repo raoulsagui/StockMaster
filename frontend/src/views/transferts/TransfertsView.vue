@@ -162,38 +162,36 @@ const formatDate = (d) => d ? new Date(d).toLocaleString('fr-FR', {
   <AppLayout>
     <div class="space-y-5">
 
-      <!-- EN-TÊTE GRADIENT -->
-      <div class="page-header bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg shadow-blue-500/20">
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="text-xl font-bold text-white">Transferts</h1>
-            <p class="text-blue-100 text-sm mt-0.5">{{ transferts.length }} transferts inter-entrepôts</p>
-          </div>
-          <button v-if="peutCreerMouvement" @click="ouvrirCreer"
-            class="inline-flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-xl text-sm font-medium transition-colors backdrop-blur-sm border border-white/20">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-            </svg>
-            Nouveau transfert
-          </button>
-        </div>
-        <div class="flex gap-4 mt-4">
-          <div class="bg-white/15 rounded-xl px-3 py-2 text-center">
-            <p class="text-lg font-bold text-white">{{ nbBrouillons }}</p>
-            <p class="text-xs text-blue-100">En attente</p>
-          </div>
-          <div class="bg-white/15 rounded-xl px-3 py-2 text-center">
-            <p class="text-lg font-bold text-white">{{ nbExpedies }}</p>
-            <p class="text-xs text-blue-100">En transit</p>
-          </div>
-          <div class="bg-white/15 rounded-xl px-3 py-2 text-center">
-            <p class="text-lg font-bold text-white">{{ nbRecus }}</p>
-            <p class="text-xs text-blue-100">Reçus</p>
-          </div>
-        </div>
-        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
-        <div class="absolute -right-4 top-8 w-20 h-20 rounded-full bg-white/5 pointer-events-none"></div>
-      </div>
+<!-- EN-TÊTE sobre -->
+       <div class="page-header">
+         <div class="flex items-center justify-between">
+           <div>
+             <h1 class="text-xl font-semibold text-gray-900">Transferts</h1>
+             <p class="text-sm text-gray-400 mt-0.5">{{ transferts.length }} transferts inter-entrepôts</p>
+           </div>
+           <button v-if="peutCreerMouvement" @click="ouvrirCreer"
+             class="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+             </svg>
+             Nouveau transfert
+           </button>
+         </div>
+         <div class="flex gap-4 mt-4">
+           <div class="bg-gray-100 rounded-xl px-3 py-2 text-center">
+             <p class="text-lg font-bold text-gray-900">{{ nbBrouillons }}</p>
+             <p class="text-xs text-gray-500">En attente</p>
+           </div>
+           <div class="bg-gray-100 rounded-xl px-3 py-2 text-center">
+             <p class="text-lg font-bold text-gray-900">{{ nbExpedies }}</p>
+             <p class="text-xs text-gray-500">En transit</p>
+           </div>
+           <div class="bg-gray-100 rounded-xl px-3 py-2 text-center">
+             <p class="text-lg font-bold text-gray-900">{{ nbRecus }}</p>
+             <p class="text-xs text-gray-500">Reçus</p>
+           </div>
+         </div>
+       </div>
 
       <!-- FILTRES PILLS -->
       <div class="flex flex-wrap gap-2">
@@ -369,16 +367,16 @@ const formatDate = (d) => d ? new Date(d).toLocaleString('fr-FR', {
                 <label class="form-label">Note <span class="text-gray-400 text-xs">(optionnel)</span></label>
                 <textarea v-model="form.note" rows="2" placeholder="Raison du transfert…" class="form-input resize-none"/>
               </div>
-              <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-                <button type="button" @click="showModal = false" class="btn-secondary">Annuler</button>
-                <button type="submit" :disabled="isSubmitting || entrepotsSource.length === 0" class="btn-primary">
-                  <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                  Créer le transfert
-                </button>
-              </div>
+<div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+                       <button type="button" @click="showModal = false" class="btn-secondary">Annuler</button>
+                       <button type="submit" :disabled="isSubmitting || entrepotsSource.length === 0" class="btn-primary">
+                         <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                         </svg>
+                         Créer le transfert
+                       </button>
+                     </div>
             </form>
           </div>
         </div>

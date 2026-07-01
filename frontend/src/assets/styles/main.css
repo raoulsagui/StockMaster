@@ -167,8 +167,8 @@
     @apply hover:bg-blue-50/40 transition-colors duration-150;
   }
 
-  /* Gradient page header */
-  .page-header {
-    @apply rounded-2xl p-5 md:p-6 mb-2 text-white relative overflow-hidden;
-  }
+/* Gradient page header - style sobre */
+   .page-header {
+     @apply rounded-2xl p-5 md:p-6 mb-2 text-gray-900 relative overflow-hidden bg-white border border-gray-200;
+   }
 }

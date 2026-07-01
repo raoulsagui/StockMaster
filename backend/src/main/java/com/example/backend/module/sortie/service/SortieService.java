@@ -23,8 +23,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * Service du module Sorties (Module 9).
  *
  * Flux métier :
- *   1. creer()   → Crée un bon en BROUILLON (vérifie stock disponible)
- *   2. valider() → Passe en VALIDE + StockService.retirerStock()
+ *   1. creer()   → Crée un bon en BROUILLON (vérifie stock disponible + produit/entrepôt actif)
+ *   2. valider() → Passe en VALIDE + StockService.retirerStock() (vérifie stock à nouveau)
  *   3. annuler() → Passe en ANNULE (uniquement depuis BROUILLON)
  */
 @Service
@@ -67,6 +67,17 @@ public class SortieService {
         var entrepot = entrepotRepository.findById(dto.getEntrepotId())
                 .orElseThrow(() -> new RuntimeException("Entrepôt introuvable"));
 
+        // Vérifications métier : produit et entrepôt doivent être actifs
+        if (!produit.isActif()) {
+            throw new RuntimeException("Le produit '" + produit.getNom() + "' est inactif et ne peut pas être sorti");
+        }
+        if (!entrepot.isActif()) {
+            throw new RuntimeException("L'entrepôt '" + entrepot.getNom() + "' est inactif");
+        }
+
+        // Vérifie que le produit existe bien en stock dans l'entrepôt avec quantité suffisante
+        stockService.verifierStockSuffisant(produit.getId(), entrepot.getId(), dto.getQuantite());
+
         // Résolution du motif (défaut LIVRAISON si non fourni)
         Sortie.MotifSortie motif = Sortie.MotifSortie.LIVRAISON;
         if (dto.getMotif() != null && !dto.getMotif().isBlank()) {
@@ -103,6 +114,13 @@ public class SortieService {
         if (sortie.getStatut() != Sortie.StatutSortie.BROUILLON) {
             throw new RuntimeException("Seul un bon en BROUILLON peut être validé");
         }
+
+        // Revérifie le stock disponible (peut avoir changé depuis la création du brouillon)
+        stockService.verifierStockSuffisant(
+                sortie.getProduit().getId(),
+                sortie.getEntrepot().getId(),
+                sortie.getQuantite()
+        );
 
         // Décrémente le stock — lève RuntimeException si insuffisant
         stockService.retirerStock(

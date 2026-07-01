@@ -22,11 +22,14 @@ import java.util.concurrent.ThreadLocalRandom;
 /**
  * Service du module Transferts (Module 10).
  *
- * Flux métier (deux étapes) :
- *   1. creer()     → BROUILLON (pas de mouvement stock)
- *   2. expedier()  → EXPEDIE : retire du stock source (TRANSFERT_SORTIE)
- *   3. receptionner() → RECU : ajoute au stock destination (TRANSFERT_ENTREE)
- *   4. annuler()   → ANNULE (uniquement depuis BROUILLON)
+ * Flux métier :
+ *   1. creer()           → BROUILLON + réserve le stock source (disponible → réservé)
+ *   2. expedier()        → EXPEDIE : retire du stock source (consume la réservation)
+ *   3. receptionner()    → RECU   : ajoute au stock destination
+ *   4. annuler()         → ANNULE : libère la réservation sur le stock source
+ *
+ * La réservation empêche qu'une autre opération (sortie, autre transfert)
+ * utilise le même stock entre la création du brouillon et l'expédition.
  *
  * La transaction est atomique à chaque étape :
  * si StockService lève une exception, le statut n'est pas sauvegardé.
@@ -61,7 +64,7 @@ public class TransfertService {
     }
 
     // -------------------------------------------------------
-    // CRÉATION
+    // CRÉATION + RÉSERVATION
     // -------------------------------------------------------
 
     @Transactional
@@ -73,17 +76,28 @@ public class TransfertService {
         var destination = entrepotRepository.findById(dto.getEntrepotDestinationId())
                 .orElseThrow(() -> new RuntimeException("Entrepôt destination introuvable"));
 
+        // Vérifications métier
         if (source.getId().equals(destination.getId())) {
             throw new RuntimeException("L'entrepôt source et destination doivent être différents");
         }
+        if (!produit.isActif()) {
+            throw new RuntimeException("Le produit '" + produit.getNom() + "' est inactif");
+        }
+        if (!source.isActif()) {
+            throw new RuntimeException("L'entrepôt source '" + source.getNom() + "' est inactif");
+        }
+        if (!destination.isActif()) {
+            throw new RuntimeException("L'entrepôt destination '" + destination.getNom() + "' est inactif");
+        }
 
-        // Vérifie que le produit existe bien en stock dans l'entrepôt source
-        stockService.verifierStockSuffisant(
-                produit.getId(), source.getId(), dto.getQuantite()
+        // Réserve le stock dans l'entrepôt source (passe de disponible → réservé)
+        String reference = genererReference();
+        stockService.reserverStock(
+                produit.getId(), source.getId(), dto.getQuantite(), reference
         );
 
         var transfert = Transfert.builder()
-                .reference(genererReference())
+                .reference(reference)
                 .statut(Transfert.StatutTransfert.BROUILLON)
                 .produit(produit)
                 .entrepotSource(source)
@@ -97,7 +111,7 @@ public class TransfertService {
     }
 
     // -------------------------------------------------------
-    // EXPÉDITION — retire du stock source
+    // EXPÉDITION — consume la réservation
     // -------------------------------------------------------
 
     @Transactional
@@ -108,14 +122,14 @@ public class TransfertService {
             throw new RuntimeException("Seul un transfert en BROUILLON peut être expédié");
         }
 
-        // Retire du stock source
-        stockService.retirerStock(
+        // La réservation a déjà réduit le disponible à la création du brouillon.
+        // On consume juste la réservation (sans retoucher au disponible).
+        stockService.consommerReservation(
                 transfert.getProduit().getId(),
                 transfert.getEntrepotSource().getId(),
                 transfert.getQuantite(),
-                MouvementStock.TypeMouvement.TRANSFERT_SORTIE,
                 transfert.getReference(),
-                "Transfert vers " + transfert.getEntrepotDestination().getNom()
+                "Transfert expédié vers " + transfert.getEntrepotDestination().getNom()
         );
 
         transfert.setStatut(Transfert.StatutTransfert.EXPEDIE);
@@ -155,7 +169,7 @@ public class TransfertService {
     }
 
     // -------------------------------------------------------
-    // ANNULATION
+    // ANNULATION — libère la réservation
     // -------------------------------------------------------
 
     @Transactional
@@ -165,6 +179,14 @@ public class TransfertService {
         if (transfert.getStatut() != Transfert.StatutTransfert.BROUILLON) {
             throw new RuntimeException("Seul un transfert en BROUILLON peut être annulé");
         }
+
+        // Libère la réservation (passe de réservé → disponible)
+        stockService.libererReservation(
+                transfert.getProduit().getId(),
+                transfert.getEntrepotSource().getId(),
+                transfert.getQuantite(),
+                transfert.getReference()
+        );
 
         transfert.setStatut(Transfert.StatutTransfert.ANNULE);
         return TransfertResponseDTO.fromEntity(transfertRepository.save(transfert));

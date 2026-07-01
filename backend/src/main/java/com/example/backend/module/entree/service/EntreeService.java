@@ -24,7 +24,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Service du module Entrées (Module 8).
  *
  * Flux métier :
- *   1. creer()   → Crée un bon en BROUILLON (pas de mise à jour stock)
+ *   1. creer()   → Crée un bon en BROUILLON (vérifie produit/entrepôt actif)
  *   2. valider() → Passe en VALIDE + appelle StockService.ajouterStock()
  *   3. annuler() → Passe en ANNULE (uniquement depuis BROUILLON)
  */
@@ -68,6 +68,14 @@ public class EntreeService {
                 .orElseThrow(() -> new RuntimeException("Produit introuvable"));
         var entrepot = entrepotRepository.findById(dto.getEntrepotId())
                 .orElseThrow(() -> new RuntimeException("Entrepôt introuvable"));
+
+        // Vérifications métier : produit et entrepôt doivent être actifs
+        if (!produit.isActif()) {
+            throw new RuntimeException("Le produit '" + produit.getNom() + "' est inactif et ne peut pas être réceptionné");
+        }
+        if (!entrepot.isActif()) {
+            throw new RuntimeException("L'entrepôt '" + entrepot.getNom() + "' est inactif");
+        }
 
         var entree = Entree.builder()
                 .reference(genererReference())

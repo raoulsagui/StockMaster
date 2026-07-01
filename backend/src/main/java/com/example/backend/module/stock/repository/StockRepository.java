@@ -1,7 +1,9 @@
 package com.example.backend.module.stock.repository;
 
 import com.example.backend.module.stock.entity.Stock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -17,7 +19,12 @@ public interface StockRepository extends JpaRepository<Stock, Long> {
     /**
      * Trouve le stock d'un produit dans un entrepôt spécifique.
      * Utilisé pour mettre à jour le stock lors d'une entrée ou sortie.
+     *
+     * Lock PESSIMISTIC_WRITE : évite les lectures périmées en concurrence.
+     * La ligne est verrouillée jusqu'à la fin de la transaction.
      */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Stock s WHERE s.produit.id = :produitId AND s.entrepot.id = :entrepotId")
     Optional<Stock> findByProduitIdAndEntrepotId(Long produitId, Long entrepotId);
 
     /**
