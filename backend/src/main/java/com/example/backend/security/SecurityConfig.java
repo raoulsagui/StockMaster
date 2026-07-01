@@ -123,10 +123,22 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
                 // --- Stocks / Mouvements / Alertes / Rapports : tous les rôles ---
-                .requestMatchers("/api/stocks/**", "/api/alertes/**",
-                        "/api/rapports/**", "/api/emplacements/**",
-                        "/api/dashboard/**")
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/stocks/**", "/api/alertes/**",
+                        "/api/rapports/**", "/api/dashboard/**")
                         .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                .requestMatchers("/api/stocks/**", "/api/alertes/**",
+                        "/api/rapports/**", "/api/dashboard/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
+
+                // --- Emplacements (Rayons / Étagères / Emplacements) ---
+                // Lecture : tous les rôles
+                .requestMatchers(org.springframework.http.HttpMethod.GET,
+                        "/api/emplacements/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER", "AUDITEUR")
+                // Écriture (création, modification, changement statut) : ADMIN + GESTIONNAIRE + MAGASINIER
+                .requestMatchers("/api/emplacements/**")
+                        .hasAnyRole("ADMIN", "GESTIONNAIRE", "MAGASINIER")
 
                 // Toutes les autres routes nécessitent d'être authentifié
                 .anyRequest().authenticated()
