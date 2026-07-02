@@ -10,6 +10,7 @@ import com.example.backend.module.utilisateur.repository.UtilisateurRepository;
 import com.example.backend.module.zone.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,7 @@ public class EntrepotService {
     private final ZoneRepository zoneRepository;
 
     public List<EntrepotResponseDTO> findAll() {
-        return entrepotRepository.findAll()
+        return entrepotRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
                 .stream()
                 .map(e -> EntrepotResponseDTO.fromEntity(e,
                         zoneRepository.countByEntrepotId(e.getId())))

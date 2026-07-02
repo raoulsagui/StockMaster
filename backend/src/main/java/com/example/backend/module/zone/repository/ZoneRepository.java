@@ -3,6 +3,8 @@ package com.example.backend.module.zone.repository;
 import com.example.backend.module.zone.entity.Zone;
 import com.example.backend.module.zone.entity.TypeZone;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -79,4 +81,17 @@ public interface ZoneRepository extends JpaRepository<Zone, Long> {
      * @return liste des zones filtrées
      */
     List<Zone> findByEntrepotIdAndType(Long entrepotId, TypeZone type);
+
+    /**
+     * Somme des capacités totales de toutes les zones d'un entrepôt.
+     * Utilisé pour vérifier que la nouvelle zone ne dépasse pas la capacité de l'entrepôt.
+     */
+    @Query("SELECT COALESCE(SUM(z.capaciteTotale), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId AND z.capaciteTotale IS NOT NULL")
+    Double sumCapaciteTotaleByEntrepotId(@Param("entrepotId") Long entrepotId);
+
+    /**
+     * Somme des capacités totales en excluant une zone (pour la modification).
+     */
+    @Query("SELECT COALESCE(SUM(z.capaciteTotale), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId AND z.id <> :excludeId AND z.capaciteTotale IS NOT NULL")
+    Double sumCapaciteTotaleByEntrepotIdExcluding(@Param("entrepotId") Long entrepotId, @Param("excludeId") Long excludeId);
 }

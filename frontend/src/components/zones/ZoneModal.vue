@@ -45,6 +45,10 @@ const erreurs   = ref({})
 const erreurApi = ref('')
 const isLoading = ref(false)
 
+const entrepotSelectionne = computed(() =>
+  entrepots.value.find(e => e.id === form.value.entrepotId) ?? null
+)
+
 // Recharge les données chaque fois que le modal s'ouvre
 watch(() => props.visible, async (val) => {
   if (!val) return
@@ -107,6 +111,13 @@ const valider = () => {
 
   if (!isNaN(total) && !isNaN(utilise) && utilise > total)
     erreurs.value.capaciteUtilisee = 'La capacité utilisée ne peut pas dépasser la capacité totale.'
+
+  // Vérification capacité disponible de l'entrepôt
+  if (!isNaN(total) && entrepotSelectionne.value?.capaciteTotale != null) {
+    const disponible = (entrepotSelectionne.value.capaciteTotale ?? 0) - (entrepotSelectionne.value.capaciteUtilisee ?? 0)
+    if (total > disponible)
+      erreurs.value.capaciteTotale = `Dépasse la capacité disponible de l'entrepôt (${disponible} m³ restants).`
+  }
 
   return Object.keys(erreurs.value).length === 0
 }
@@ -200,6 +211,13 @@ const soumettre = async () => {
               <p v-if="erreurs.entrepotId" class="form-error">{{ erreurs.entrepotId }}</p>
               <p v-if="entrepots.length === 0" class="text-xs text-orange-500 mt-1">
                 Aucun entrepôt actif disponible.
+              </p>
+              <p v-if="entrepotSelectionne" class="text-xs text-gray-500 mt-1">
+                Capacité disponible :
+                <span class="font-medium text-gray-700">
+                  {{ (entrepotSelectionne.capaciteTotale ?? 0) - (entrepotSelectionne.capaciteUtilisee ?? 0) }} m³
+                </span>
+                sur {{ entrepotSelectionne.capaciteTotale ?? '?' }} m³ au total
               </p>
             </div>
 

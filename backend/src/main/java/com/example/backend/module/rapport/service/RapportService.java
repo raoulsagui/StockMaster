@@ -85,23 +85,17 @@ public class RapportService {
      * @param entrepotId Filtre optionnel par entrepôt (null = tous)
      * @param type       Filtre optionnel par type de mouvement (null = tous)
      */
-    public RapportMouvementsDTO getRapportMouvements(
-            LocalDateTime dateDebut, LocalDateTime dateFin,
-            Long entrepotId, String type) {
+    public RapportMouvementsDTO getRapportMouvements(Long entrepotId, String type) {
 
-        // Charge tous les mouvements non paginés pour le rapport
         List<MouvementStock> mouvements = mouvementRepository
                 .findAllByOrderByDateCreationDesc(
                         org.springframework.data.domain.Pageable.unpaged())
                 .getContent()
                 .stream()
-                .filter(m -> !m.getDateCreation().isBefore(dateDebut)
-                          && !m.getDateCreation().isAfter(dateFin))
                 .filter(m -> entrepotId == null || m.getEntrepot().getId().equals(entrepotId))
                 .filter(m -> type == null || m.getType().name().equals(type))
                 .toList();
 
-        // Agrégations par type
         Map<String, Long> countParType = mouvements.stream()
                 .collect(Collectors.groupingBy(m -> m.getType().name(), Collectors.counting()));
 
@@ -116,8 +110,6 @@ public class RapportService {
                 .toList();
 
         return RapportMouvementsDTO.builder()
-                .dateDebut(dateDebut)
-                .dateFin(dateFin)
                 .totalMouvements(mouvements.size())
                 .countParType(countParType)
                 .quantiteParType(quantiteParType)
@@ -133,17 +125,12 @@ public class RapportService {
      * Rapport des commandes fournisseurs sur une période donnée.
      * Agrège les commandes par fournisseur.
      */
-    public RapportFournisseursDTO getRapportFournisseurs(
-            LocalDateTime dateDebut, LocalDateTime dateFin) {
+    public RapportFournisseursDTO getRapportFournisseurs() {
 
         List<Commande> commandes = commandeRepository
                 .findAllByOrderByDateCreationDesc(
                         org.springframework.data.domain.Pageable.unpaged())
-                .getContent()
-                .stream()
-                .filter(c -> !c.getDateCreation().isBefore(dateDebut)
-                          && !c.getDateCreation().isAfter(dateFin))
-                .toList();
+                .getContent();
 
         Map<String, Long> countParStatut = commandes.stream()
                 .collect(Collectors.groupingBy(
@@ -184,8 +171,6 @@ public class RapportService {
                 .toList();
 
         return RapportFournisseursDTO.builder()
-                .dateDebut(dateDebut)
-                .dateFin(dateFin)
                 .totalCommandes(commandes.size())
                 .montantTotalHT(montantTotal)
                 .countParStatut(countParStatut)

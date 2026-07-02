@@ -15,8 +15,8 @@ const donnees         = ref(null)
 const inventaires     = ref([])
 const inventaireSelId = ref(null)
 
-const today     = new Date().toISOString().slice(0, 16)
-const lastMonth = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 16)
+const today     = new Date().toISOString().slice(0, 10)
+const lastMonth = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10)
 const filtres   = ref({ dateDebut: lastMonth, dateFin: today, entrepotId: null, type: null })
 
 onMounted(async () => {
@@ -31,12 +31,12 @@ async function generer() {
       donnees.value = await rapportService.getRapportInventaire(inventaireSelId.value)
     } else if (onglet.value === 'mouvements') {
       donnees.value = await rapportService.getRapportMouvements({
-        dateDebut: filtres.value.dateDebut, dateFin: filtres.value.dateFin,
+        dateDebut: filtres.value.dateDebut + 'T00:00:00', dateFin: filtres.value.dateFin + 'T23:59:59',
         entrepotId: filtres.value.entrepotId || null, type: filtres.value.type || null,
       })
     } else {
       donnees.value = await rapportService.getRapportFournisseurs({
-        dateDebut: filtres.value.dateDebut, dateFin: filtres.value.dateFin,
+        dateDebut: filtres.value.dateDebut + 'T00:00:00', dateFin: filtres.value.dateFin + 'T23:59:59',
       })
     }
   } catch (e) {
@@ -51,9 +51,9 @@ async function exporter(format) {
     if (onglet.value === 'inventaire')
       await rapportService.exportInventaire(inventaireSelId.value, format)
     else if (onglet.value === 'mouvements')
-      await rapportService.exportMouvements({ dateDebut: filtres.value.dateDebut, dateFin: filtres.value.dateFin, entrepotId: filtres.value.entrepotId || null, type: filtres.value.type || null }, format)
+      await rapportService.exportMouvements({ dateDebut: filtres.value.dateDebut + 'T00:00:00', dateFin: filtres.value.dateFin + 'T23:59:59', entrepotId: filtres.value.entrepotId || null, type: filtres.value.type || null }, format)
     else
-      await rapportService.exportFournisseurs({ dateDebut: filtres.value.dateDebut, dateFin: filtres.value.dateFin }, format)
+      await rapportService.exportFournisseurs({ dateDebut: filtres.value.dateDebut + 'T00:00:00', dateFin: filtres.value.dateFin + 'T23:59:59' }, format)
   } catch { erreur.value = "Erreur lors de l'export." }
   finally { isExporting.value = false }
 }

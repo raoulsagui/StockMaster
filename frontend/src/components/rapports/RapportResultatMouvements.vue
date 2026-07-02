@@ -5,7 +5,7 @@ defineProps({
 
 function fmtDate(d) {
   if (!d) return '—'
-  return new Date(d).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+  return new Date(d).toLocaleString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' })
 }
 function fmtNb(n) { return n != null ? Number(n).toLocaleString('fr-FR') : '—' }
 
@@ -39,9 +39,7 @@ const badgeMvt = (type) => {
     <!-- Tableau -->
     <div class="card p-0 overflow-hidden">
       <div class="px-5 py-3 border-b border-gray-100">
-        <h3 class="text-sm font-semibold text-gray-700">
-          Mouvements du {{ fmtDate(donnees.dateDebut) }} au {{ fmtDate(donnees.dateFin) }}
-        </h3>
+        <h3 class="text-sm font-semibold text-gray-700">Liste des mouvements</h3>
       </div>
       <div class="overflow-x-auto">
         <table class="w-full">

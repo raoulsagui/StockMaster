@@ -8,7 +8,6 @@ import com.example.backend.module.rapport.service.RapportExcelGenerator;
 import com.example.backend.module.rapport.service.RapportPdfGenerator;
 import com.example.backend.module.rapport.service.RapportService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -66,18 +65,14 @@ public class RapportController {
 
     @GetMapping("/mouvements")
     public ResponseEntity<RapportMouvementsDTO> getRapportMouvements(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin,
             @RequestParam(required = false) Long entrepotId,
             @RequestParam(required = false) String type) {
-        return ResponseEntity.ok(rapportService.getRapportMouvements(dateDebut, dateFin, entrepotId, type));
+        return ResponseEntity.ok(rapportService.getRapportMouvements(entrepotId, type));
     }
 
     @GetMapping("/fournisseurs")
-    public ResponseEntity<RapportFournisseursDTO> getRapportFournisseurs(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
-        return ResponseEntity.ok(rapportService.getRapportFournisseurs(dateDebut, dateFin));
+    public ResponseEntity<RapportFournisseursDTO> getRapportFournisseurs() {
+        return ResponseEntity.ok(rapportService.getRapportFournisseurs());
     }
 
     // -------------------------------------------------------
@@ -99,12 +94,10 @@ public class RapportController {
 
     @GetMapping("/mouvements/export")
     public ResponseEntity<byte[]> exportMouvements(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin,
             @RequestParam(required = false) Long entrepotId,
             @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "pdf") String format) {
-        RapportMouvementsDTO dto = rapportService.getRapportMouvements(dateDebut, dateFin, entrepotId, type);
+        RapportMouvementsDTO dto = rapportService.getRapportMouvements(entrepotId, type);
         return buildResponse(format,
                 pdfGenerator.genererMouvements(dto),
                 excelGenerator.genererMouvements(dto),
@@ -114,10 +107,8 @@ public class RapportController {
 
     @GetMapping("/fournisseurs/export")
     public ResponseEntity<byte[]> exportFournisseurs(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin,
             @RequestParam(defaultValue = "pdf") String format) {
-        RapportFournisseursDTO dto = rapportService.getRapportFournisseurs(dateDebut, dateFin);
+        RapportFournisseursDTO dto = rapportService.getRapportFournisseurs();
         return buildResponse(format,
                 pdfGenerator.genererFournisseurs(dto),
                 excelGenerator.genererFournisseurs(dto),

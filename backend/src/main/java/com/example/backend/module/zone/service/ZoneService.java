@@ -7,6 +7,7 @@ import com.example.backend.module.zone.dto.ZoneResponseDTO;
 import com.example.backend.module.zone.entity.Zone;
 import com.example.backend.module.zone.repository.ZoneRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,7 @@ public class ZoneService {
      * @return liste de tous les DTOs de zones
      */
     public List<ZoneResponseDTO> findAll() {
-        return zoneRepository.findAll()
+        return zoneRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
                 .stream()
                 .map(ZoneResponseDTO::fromEntity)
                 .toList();
@@ -105,6 +106,19 @@ public class ZoneService {
             );
         }
 
+        // Règle 4 : la capacité de la zone ne dépasse pas la capacité disponible de l'entrepôt
+        if (dto.getCapaciteTotale() != null) {
+            double dejaAlloue = zoneRepository.sumCapaciteTotaleByEntrepotId(dto.getEntrepotId());
+            double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
+            if (dto.getCapaciteTotale() > disponible) {
+                throw new RuntimeException(
+                    "La capacité de la zone (" + dto.getCapaciteTotale() + " m³) dépasse "
+                    + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
+                    + entrepot.getCapaciteTotale() + " m³ au total)"
+                );
+            }
+        }
+
         Zone zone = Zone.builder()
                 .nom(dto.getNom())
                 .type(dto.getType())
@@ -158,6 +172,19 @@ public class ZoneService {
             throw new RuntimeException(
                 "La capacité utilisée ne peut pas dépasser la capacité totale"
             );
+        }
+
+        // Règle 5 : la capacité de la zone ne dépasse pas la capacité disponible de l'entrepôt
+        if (dto.getCapaciteTotale() != null) {
+            double dejaAlloue = zoneRepository.sumCapaciteTotaleByEntrepotIdExcluding(dto.getEntrepotId(), id);
+            double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
+            if (dto.getCapaciteTotale() > disponible) {
+                throw new RuntimeException(
+                    "La capacité de la zone (" + dto.getCapaciteTotale() + " m³) dépasse "
+                    + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
+                    + entrepot.getCapaciteTotale() + " m³ au total)"
+                );
+            }
         }
 
         zone.setNom(dto.getNom());

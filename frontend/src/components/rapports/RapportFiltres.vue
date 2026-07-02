@@ -39,14 +39,14 @@ const emit = defineEmits([
         <input
           :value="filtres.dateDebut"
           @input="emit('update:filtres', { ...filtres, dateDebut: $event.target.value })"
-          type="datetime-local" class="form-input" />
+          type="date" class="form-input" />
       </div>
       <div>
         <label class="form-label">Date fin <span class="text-red-500">*</span></label>
         <input
           :value="filtres.dateFin"
           @input="emit('update:filtres', { ...filtres, dateFin: $event.target.value })"
-          type="datetime-local" class="form-input" />
+          type="date" class="form-input" />
       </div>
       <div v-if="onglet === 'mouvements'">
         <label class="form-label">Type de mouvement</label>
