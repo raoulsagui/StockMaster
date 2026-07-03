@@ -27,6 +27,11 @@ defineProps({
 
 const emit = defineEmits(['modifier', 'toggle'])
 
+const zoneTaux = computed(() => {
+  if (!zone.entrepot?.capaciteTotale || zone.entrepot.capaciteTotale <= 0) return 0
+  return Math.min(((zone.capaciteUtilisee || 0) / zone.entrepot.capaciteTotale) * 100, 100)
+})
+
 // -------------------------------------------------------
 // CONSTANTES D'AFFICHAGE
 // Définies directement dans le composant pour éviter de les
@@ -58,6 +63,10 @@ const TYPE_COLORS = {
 // HELPERS D'AFFICHAGE
 // -------------------------------------------------------
 
+function formatCapacite(val) {
+  return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
+}
+
 function getCouleurBarre(taux) {
   if (taux >= 85) return 'bg-red-500'
   if (taux >= 60) return 'bg-orange-400'
@@ -67,16 +76,7 @@ function getCouleurBarre(taux) {
 function getCouleurTaux(taux) {
   if (taux >= 85) return 'text-red-600'
   if (taux >= 60) return 'text-orange-500'
-  return 'text-green-600'
-}
-
-function formatCapacite(val) {
-  return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
-}
-
-/** true si la zone a une capacité totale définie */
-function aCapacite(zone) {
-  return zone.capaciteTotale != null && zone.capaciteTotale > 0
+  return 'text-gray-600'
 }
 </script>
 
@@ -108,25 +108,22 @@ function aCapacite(zone) {
       </span>
     </td>
 
-    <!-- Barre d'occupation + taux numérique -->
+    <!-- Capacité utilisée -->
     <td class="table-cell w-44">
-      <template v-if="aCapacite(zone)">
-        <div class="flex items-center gap-2">
-          <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              :class="['h-1.5 rounded-full transition-all duration-500', getCouleurBarre(zone.tauxOccupation)]"
-              :style="{ width: Math.min(zone.tauxOccupation, 100) + '%' }"
-            ></div>
-          </div>
-          <span :class="['text-xs font-semibold w-10 text-right', getCouleurTaux(zone.tauxOccupation)]">
-            {{ zone.tauxOccupation }} %
-          </span>
+      <div class="flex items-center gap-2">
+        <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div
+            :class="['h-1.5 rounded-full transition-all duration-500', getCouleurBarre(zoneTaux)]"
+            :style="{ width: Math.min(zoneTaux, 100) + '%' }"
+          ></div>
         </div>
-        <p class="text-xs text-gray-400 mt-0.5">
-          {{ formatCapacite(zone.capaciteUtilisee) }} / {{ formatCapacite(zone.capaciteTotale) }}
-        </p>
-      </template>
-      <span v-else class="text-xs text-gray-400 italic">Non définie</span>
+        <span :class="['text-xs font-semibold w-10 text-right', getCouleurTaux(zoneTaux)]">
+          {{ Math.round(zoneTaux) }} %
+        </span>
+      </div>
+      <p class="text-xs text-gray-400 mt-0.5">
+        {{ formatCapacite(zone.capaciteUtilisee) }}
+      </p>
     </td>
 
     <!-- Badge statut -->

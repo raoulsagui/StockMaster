@@ -27,6 +27,10 @@ const props = defineProps({
 
 const isEditing = computed(() => props.id !== null)
 
+const entrepotSelectionne = computed(() =>
+  entrepots.value.find(e => e.id === form.value.entrepotId) ?? null
+)
+
 // -------------------------------------------------------
 // ÉTAT DU FORMULAIRE
 // -------------------------------------------------------
@@ -34,7 +38,6 @@ const form = ref({
   nom:              '',
   type:             '',
   description:      '',
-  capaciteTotale:   '',
   capaciteUtilisee: 0,
   // Pré-remplit depuis le query param si on arrive depuis la vue entrepôts
   entrepotId:       route.query.entrepotId ? Number(route.query.entrepotId) : null,
@@ -63,7 +66,6 @@ onMounted(async () => {
         nom:              data.nom,
         type:             data.type,
         description:      data.description || '',
-        capaciteTotale:   data.capaciteTotale,
         capaciteUtilisee: data.capaciteUtilisee,
         entrepotId:       data.entrepot?.id ?? null,
       }
@@ -88,13 +90,15 @@ const valider = () => {
   if (!form.value.entrepotId)
     erreurs.value.entrepotId = "L'entrepôt est obligatoire."
 
-  const capacite = parseFloat(form.value.capaciteTotale)
-  if (!form.value.capaciteTotale || isNaN(capacite) || capacite < 1)
-    erreurs.value.capaciteTotale = 'La capacité totale doit être d\'au moins 1 m³.'
-
   const utilise = parseFloat(form.value.capaciteUtilisee) || 0
-  if (!isNaN(capacite) && utilise > capacite)
-    erreurs.value.capaciteUtilisee = 'Ne peut pas dépasser la capacité totale.'
+  if (isNaN(utilise) || utilise < 0)
+    erreurs.value.capaciteUtilisee = 'La capacité utilisée ne peut pas être négative.'
+
+  if (!isNaN(utilise) && entrepotSelectionne.value?.capaciteTotale != null) {
+    const disponible = (entrepotSelectionne.value.capaciteTotale ?? 0) - (entrepotSelectionne.value.capaciteUtilisee ?? 0)
+    if (utilise > disponible)
+      erreurs.value.capaciteUtilisee = `Dépasse la capacité disponible de l'entrepôt (${disponible} m³ restants).`
+  }
 
   return Object.keys(erreurs.value).length === 0
 }
@@ -113,7 +117,6 @@ const soumettre = async () => {
       nom:              form.value.nom.trim(),
       type:             form.value.type,
       description:      form.value.description?.trim() || null,
-      capaciteTotale:   parseFloat(form.value.capaciteTotale),
       capaciteUtilisee: parseFloat(form.value.capaciteUtilisee) || 0,
       entrepotId:       form.value.entrepotId,
     }
@@ -219,30 +222,15 @@ const annuler = () => router.push({ name: 'zones' })
         <!-- Capacités -->
         <div class="border-t border-gray-100 pt-5">
           <p class="text-sm font-medium text-gray-700 mb-4">Capacité de la zone</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-            <div>
-              <label for="capaciteTotale" class="form-label">
-                Capacité totale (m³) <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="capaciteTotale" v-model="form.capaciteTotale" type="number" min="1" step="0.1"
-                placeholder="Ex : 500"
-                :class="['form-input', erreurs.capaciteTotale ? 'border-red-400 focus:ring-red-400' : '']"
-              />
-              <p v-if="erreurs.capaciteTotale" class="form-error">{{ erreurs.capaciteTotale }}</p>
-            </div>
-
-            <div>
-              <label for="capaciteUtilisee" class="form-label">Capacité utilisée (m³)</label>
-              <input
-                id="capaciteUtilisee" v-model="form.capaciteUtilisee" type="number" min="0" step="0.1"
-                placeholder="Ex : 120"
-                :class="['form-input', erreurs.capaciteUtilisee ? 'border-red-400 focus:ring-red-400' : '']"
-              />
-              <p v-if="erreurs.capaciteUtilisee" class="form-error">{{ erreurs.capaciteUtilisee }}</p>
-            </div>
-
+          <div>
+            <label for="capaciteUtilisee" class="form-label">Capacité utilisée (m³)</label>
+            <input
+              id="capaciteUtilisee" v-model="form.capaciteUtilisee" type="number" min="0" step="0.1"
+              placeholder="Ex : 120"
+              :class="['form-input', erreurs.capaciteUtilisee ? 'border-red-400 focus:ring-red-400' : '']"
+            />
+            <p v-if="erreurs.capaciteUtilisee" class="form-error">{{ erreurs.capaciteUtilisee }}</p>
           </div>
         </div>
 

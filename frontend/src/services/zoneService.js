@@ -43,7 +43,7 @@ const zoneService = {
   /**
    * POST /api/zones
    * Crée une nouvelle zone dans un entrepôt.
-   * @param {Object} data - { nom, type, description?, capaciteTotale, capaciteUtilisee?, entrepotId }
+   * @param {Object} data - { nom, type, description?, capaciteUtilisee?, entrepotId }
    * @returns {Promise<ZoneResponseDTO>}
    */
   async creer(data) {

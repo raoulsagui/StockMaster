@@ -36,7 +36,6 @@ const form = ref({
   nom:              '',
   adresse:          '',
   capaciteTotale:   '',
-  capaciteUtilisee: 0,
   responsableId:    null,
 })
 
@@ -65,18 +64,17 @@ watch(() => props.visible, async (val) => {
     try {
       const data = await entrepotService.findById(props.entrepotId)
       form.value = {
-        nom:              data.nom,
-        adresse:          data.adresse,
-        capaciteTotale:   data.capaciteTotale,
-        capaciteUtilisee: data.capaciteUtilisee,
-        responsableId:    data.responsable?.id ?? null,
+        nom:            data.nom,
+        adresse:        data.adresse,
+        capaciteTotale: data.capaciteTotale,
+        responsableId:  data.responsable?.id ?? null,
       }
       membresSelectionnes.value = data.membresIds ?? []
     } catch {
       erreurApi.value = "Impossible de charger cet entrepôt."
     }
   } else {
-    form.value = { nom: '', adresse: '', capaciteTotale: '', capaciteUtilisee: 0, responsableId: null }
+    form.value = { nom: '', adresse: '', capaciteTotale: '', responsableId: null }
     membresSelectionnes.value = []
   }
 })
@@ -99,10 +97,6 @@ const valider = () => {
   if (!form.value.capaciteTotale || isNaN(capacite) || capacite < 1)
     erreurs.value.capaciteTotale = "La capacité totale doit être d'au moins 1 m³."
 
-  const utilise = parseFloat(form.value.capaciteUtilisee) || 0
-  if (!isNaN(capacite) && utilise > capacite)
-    erreurs.value.capaciteUtilisee = 'Ne peut pas dépasser la capacité totale.'
-
   return Object.keys(erreurs.value).length === 0
 }
 
@@ -116,11 +110,10 @@ const soumettre = async () => {
 
   try {
     const payload = {
-      nom:              form.value.nom.trim(),
-      adresse:          form.value.adresse.trim(),
-      capaciteTotale:   parseFloat(form.value.capaciteTotale),
-      capaciteUtilisee: parseFloat(form.value.capaciteUtilisee) || 0,
-      responsableId:    form.value.responsableId || null,
+      nom:            form.value.nom.trim(),
+      adresse:        form.value.adresse.trim(),
+      capaciteTotale: parseFloat(form.value.capaciteTotale),
+      responsableId:  form.value.responsableId || null,
     }
 
     if (isEditing.value) {
@@ -224,15 +217,6 @@ const soumettre = async () => {
                     :class="['form-input', erreurs.capaciteTotale ? 'border-red-400 focus:ring-red-400' : '']"
                   />
                   <p v-if="erreurs.capaciteTotale" class="form-error">{{ erreurs.capaciteTotale }}</p>
-                </div>
-                <div>
-                  <label class="form-label">Capacité utilisée (m³)</label>
-                  <input
-                    v-model="form.capaciteUtilisee" type="number" min="0" step="0.1"
-                    placeholder="Ex : 1200"
-                    :class="['form-input', erreurs.capaciteUtilisee ? 'border-red-400 focus:ring-red-400' : '']"
-                  />
-                  <p v-if="erreurs.capaciteUtilisee" class="form-error">{{ erreurs.capaciteUtilisee }}</p>
                 </div>
               </div>
             </div>
