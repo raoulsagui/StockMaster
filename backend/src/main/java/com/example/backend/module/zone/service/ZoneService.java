@@ -2,7 +2,6 @@ package com.example.backend.module.zone.service;
 
 import com.example.backend.module.entrepot.entity.Entrepot;
 import com.example.backend.module.entrepot.repository.EntrepotRepository;
-import com.example.backend.module.entrepot.service.EntrepotService;
 import com.example.backend.module.zone.dto.ZoneRequestDTO;
 import com.example.backend.module.zone.dto.ZoneResponseDTO;
 import com.example.backend.module.zone.entity.Zone;
@@ -14,30 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/**
- * Service du module Zone de stockage.
- *
- * Contient la logique métier des zones :
- *   - Vérification que la zone appartient à un entrepôt actif
- *   - Unicité du nom au sein d'un même entrepôt
- *
- * La zone ne tracke que sa capacité utilisée.
- * La somme des capacités utilisées des zones ne doit pas dépasser
- * la capacité totale de l'entrepôt parent.
- */
 @Service
 @RequiredArgsConstructor
 public class ZoneService {
 
     private final ZoneRepository zoneRepository;
     private final EntrepotRepository entrepotRepository;
-    private final EntrepotService entrepotService;
 
-    /**
-     * Récupère toutes les zones du système.
-     *
-     * @return liste de tous les DTOs de zones
-     */
     public List<ZoneResponseDTO> findAll() {
         return zoneRepository.findAll(Sort.by(Sort.Direction.DESC, "id"))
                 .stream()
@@ -45,13 +27,6 @@ public class ZoneService {
                 .toList();
     }
 
-    /**
-     * Récupère toutes les zones d'un entrepôt donné.
-     *
-     * @param entrepotId L'id de l'entrepôt
-     * @return liste des zones de l'entrepôt
-     * @throws RuntimeException si l'entrepôt n'existe pas
-     */
     public List<ZoneResponseDTO> findByEntrepot(Long entrepotId) {
         findEntrepotOrThrow(entrepotId);
         return zoneRepository.findByEntrepotId(entrepotId)
@@ -60,58 +35,34 @@ public class ZoneService {
                 .toList();
     }
 
-    /**
-     * Récupère une zone par son identifiant.
-     *
-     * @param id Identifiant de la zone
-     * @return DTO de la zone
-     * @throws RuntimeException si la zone n'existe pas
-     */
     public ZoneResponseDTO findById(Long id) {
-        Zone zone = findZoneOrThrow(id);
-        return ZoneResponseDTO.fromEntity(zone);
+        return ZoneResponseDTO.fromEntity(findZoneOrThrow(id));
     }
 
-    /**
-     * Crée une nouvelle zone dans un entrepôt.
-     *
-     * Règles métier vérifiées :
-     *   1. L'entrepôt doit exister et être actif
-     *   2. Le nom de la zone doit être unique dans cet entrepôt
-     *
-     * @param dto Les données de la zone à créer
-     * @return DTO de la zone créée
-     */
     @Transactional
     public ZoneResponseDTO creer(ZoneRequestDTO dto) {
         Entrepot entrepot = findEntrepotOrThrow(dto.getEntrepotId());
 
-        // Règle 1 : l'entrepôt doit être actif
         if (!entrepot.isActif()) {
             throw new RuntimeException(
-                "Impossible de créer une zone dans l'entrepôt \"" + entrepot.getNom()
-                + "\" car il est actuellement désactivé"
+                "Impossible de créer une zone dans l'entrepôt \"" + entrepot.getNom() + "\" car il est désactivé"
             );
         }
 
-        // Règle 2 : unicité du nom au sein de l'entrepôt
         if (zoneRepository.existsByNomAndEntrepotId(dto.getNom(), dto.getEntrepotId())) {
             throw new RuntimeException(
                 "Une zone nommée \"" + dto.getNom() + "\" existe déjà dans cet entrepôt"
             );
         }
 
-        // Règle 3 : la capacité utilisée de la zone ne dépasse pas la capacité disponible de l'entrepôt
-        if (dto.getCapaciteUtilisee() != null) {
-            double dejaAlloue = zoneRepository.sumCapaciteUtiliseeByEntrepotId(dto.getEntrepotId());
-            double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
-            if (dto.getCapaciteUtilisee() > disponible) {
-                throw new RuntimeException(
-                    "La capacité utilisée de la zone (" + dto.getCapaciteUtilisee() + " m³) dépasse "
-                    + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
-                    + entrepot.getCapaciteTotale() + " m³ au total)"
-                );
-            }
+        // Vérification : somme des capacités des zones + nouvelle capacité <= capacité totale entrepôt
+        double dejaAlloue = zoneRepository.sumCapaciteByEntrepotId(dto.getEntrepotId());
+        double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
+        if (dto.getCapacite() > disponible) {
+            throw new RuntimeException(
+                "La capacité de la zone (" + dto.getCapacite() + " m³) dépasse "
+                + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants)"
+            );
         }
 
         Zone zone = Zone.builder()
@@ -119,95 +70,65 @@ public class ZoneService {
                 .type(dto.getType())
                 .description(dto.getDescription())
                 .entrepot(entrepot)
-                .capaciteUtilisee(dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0)
+                .capacite(dto.getCapacite())
                 .actif(true)
                 .build();
 
-        Zone saved = zoneRepository.save(zone);
-        entrepotService.recalculerCapaciteUtilisee(entrepot.getId());
-        return ZoneResponseDTO.fromEntity(saved);
+        zoneRepository.save(zone);
+        recalculerCapaciteEntrepot(entrepot);
+        return ZoneResponseDTO.fromEntity(zone);
     }
 
-    /**
-     * Modifie une zone existante.
-     *
-     * Règles métier vérifiées :
-     *   1. La zone doit exister
-     *   2. Si le nom change, le nouveau nom ne doit pas être pris dans le même entrepôt
-     *   3. Si l'entrepôt change, le nouvel entrepôt doit exister et être actif
-     *
-     * @param id  Identifiant de la zone à modifier
-     * @param dto Nouvelles données
-     * @return DTO de la zone mise à jour
-     */
     @Transactional
     public ZoneResponseDTO modifier(Long id, ZoneRequestDTO dto) {
         Zone zone = findZoneOrThrow(id);
         Entrepot entrepot = findEntrepotOrThrow(dto.getEntrepotId());
 
-        // Règle 3 : si on change d'entrepôt, le nouvel entrepôt doit être actif
         if (!entrepot.isActif()) {
-            throw new RuntimeException(
-                "L'entrepôt cible \"" + entrepot.getNom() + "\" est désactivé"
-            );
+            throw new RuntimeException("L'entrepôt cible \"" + entrepot.getNom() + "\" est désactivé");
         }
 
-        // Règle 2 : unicité du nom dans l'entrepôt (en excluant la zone actuelle)
         if (!zone.getNom().equals(dto.getNom())
-                && zoneRepository.existsByNomAndEntrepotIdAndIdNot(
-                        dto.getNom(), dto.getEntrepotId(), id)) {
+                && zoneRepository.existsByNomAndEntrepotIdAndIdNot(dto.getNom(), dto.getEntrepotId(), id)) {
             throw new RuntimeException(
                 "Une zone nommée \"" + dto.getNom() + "\" existe déjà dans cet entrepôt"
             );
         }
 
-        // Règle 4 : la capacité utilisée de la zone ne dépasse pas la capacité disponible de l'entrepôt
-        if (dto.getCapaciteUtilisee() != null) {
-            double dejaAlloue = zoneRepository.sumCapaciteUtiliseeByEntrepotIdExcluding(dto.getEntrepotId(), id);
-            double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
-            if (dto.getCapaciteUtilisee() > disponible) {
-                throw new RuntimeException(
-                    "La capacité utilisée de la zone (" + dto.getCapaciteUtilisee() + " m³) dépasse "
-                    + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
-                    + entrepot.getCapaciteTotale() + " m³ au total)"
-                );
-            }
+        // Vérification capacité disponible (en excluant la zone actuelle)
+        double dejaAlloue = zoneRepository.sumCapaciteByEntrepotIdExcluding(dto.getEntrepotId(), id);
+        double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
+        if (dto.getCapacite() > disponible) {
+            throw new RuntimeException(
+                "La capacité de la zone (" + dto.getCapacite() + " m³) dépasse "
+                + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants)"
+            );
         }
 
         Long ancienEntrepotId = zone.getEntrepot().getId();
-        boolean changementEntrepot = !ancienEntrepotId.equals(dto.getEntrepotId());
-
         zone.setNom(dto.getNom());
         zone.setType(dto.getType());
         zone.setDescription(dto.getDescription());
         zone.setEntrepot(entrepot);
-        if (dto.getCapaciteUtilisee() != null) {
-            zone.setCapaciteUtilisee(dto.getCapaciteUtilisee());
-        }
+        zone.setCapacite(dto.getCapacite());
 
-        Zone saved = zoneRepository.save(zone);
-        entrepotService.recalculerCapaciteUtilisee(ancienEntrepotId);
-        if (changementEntrepot) {
-            entrepotService.recalculerCapaciteUtilisee(entrepot.getId());
+        zoneRepository.save(zone);
+
+        // Si changement d'entrepôt, recalculer les deux
+        if (!ancienEntrepotId.equals(dto.getEntrepotId())) {
+            recalculerCapaciteEntrepot(findEntrepotOrThrow(ancienEntrepotId));
         }
-        return ZoneResponseDTO.fromEntity(saved);
+        recalculerCapaciteEntrepot(entrepot);
+        return ZoneResponseDTO.fromEntity(zone);
     }
 
-    /**
-     * Active ou désactive une zone.
-     *
-     * Une zone désactivée n'accepte plus de nouveau stock
-     * mais conserve son historique de mouvements.
-     *
-     * @param id Identifiant de la zone
-     * @return DTO de la zone avec son nouveau statut
-     */
     @Transactional
     public ZoneResponseDTO toggleStatut(Long id) {
         Zone zone = findZoneOrThrow(id);
         zone.setActif(!zone.isActif());
-        Zone saved = zoneRepository.save(zone);
-        return ZoneResponseDTO.fromEntity(saved);
+        zoneRepository.save(zone);
+        recalculerCapaciteEntrepot(zone.getEntrepot());
+        return ZoneResponseDTO.fromEntity(zone);
     }
 
     // -------------------------------------------------------
@@ -222,5 +143,11 @@ public class ZoneService {
     private Entrepot findEntrepotOrThrow(Long id) {
         return entrepotRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Entrepôt introuvable : id=" + id));
+    }
+
+    private void recalculerCapaciteEntrepot(Entrepot entrepot) {
+        Double somme = zoneRepository.sumCapaciteByEntrepotId(entrepot.getId());
+        entrepot.setCapaciteUtilisee(somme != null ? somme : 0.0);
+        entrepotRepository.save(entrepot);
     }
 }

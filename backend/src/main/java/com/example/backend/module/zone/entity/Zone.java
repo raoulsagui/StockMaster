@@ -66,13 +66,12 @@ public class Zone {
     private boolean actif = true;
 
     /**
-     * Capacité actuellement utilisée dans cette zone en mètres cubes (m³).
-     * Correspond à la place occupée par le stock de cette zone.
-     * Mise à jour lors des mouvements de stock.
+     * Capacité allouée à cette zone en m³.
+     * La somme des capacités de toutes les zones d'un entrepôt
+     * doit égaler la capacité totale de l'entrepôt.
      */
-    @Builder.Default
     @Column(nullable = false)
-    private Double capaciteUtilisee = 0.0;
+    private Double capacite;
 
     /**
      * Entrepôt parent auquel appartient cette zone.
@@ -103,4 +102,17 @@ public class Zone {
     // MÉTHODES MÉTIER
     // -------------------------------------------------------
 
+    /**
+     * Taux d'occupation de la zone = capacite / capaciteTotale entrepot.
+     * Utilisé par AlerteService.
+     */
+    public double getTauxOccupation() {
+        if (entrepot == null || entrepot.getCapaciteTotale() == null || entrepot.getCapaciteTotale() == 0) return 0.0;
+        double cap = capacite != null ? capacite : 0.0;
+        return Math.min((cap / entrepot.getCapaciteTotale()) * 100.0, 100.0);
+    }
+
+    public Double getCapaciteTotale() {
+        return capacite;
+    }
 }

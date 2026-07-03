@@ -25,9 +25,14 @@ public class ZoneResponseDTO {
     private LocalDateTime dateCreation;
 
     /**
-     * Capacité actuellement occupée dans la zone en m³.
+     * Capacité allouée à cette zone en m³.
      */
-    private Double capaciteUtilisee;
+    private Double capacite;
+
+    /**
+     * Capacité disponible dans l'entrepôt au moment de la réponse.
+     */
+    private Double capaciteDisponibleEntrepot;
 
     /**
      * Informations de base sur l'entrepôt parent.
@@ -54,6 +59,10 @@ public class ZoneResponseDTO {
      * @return Le DTO prêt à être sérialisé en JSON
      */
     public static ZoneResponseDTO fromEntity(Zone zone) {
+        double capaciteDisponible = 0.0;
+        if (zone.getEntrepot() != null && zone.getEntrepot().getCapaciteTotale() != null) {
+            capaciteDisponible = zone.getEntrepot().getCapaciteTotale() - zone.getEntrepot().getCapaciteUtilisee();
+        }
         return ZoneResponseDTO.builder()
                 .id(zone.getId())
                 .nom(zone.getNom())
@@ -61,8 +70,8 @@ public class ZoneResponseDTO {
                 .description(zone.getDescription())
                 .actif(zone.isActif())
                 .dateCreation(zone.getDateCreation())
-                .capaciteUtilisee(zone.getCapaciteUtilisee())
-                // Entrepôt parent
+                .capacite(zone.getCapacite())
+                .capaciteDisponibleEntrepot(capaciteDisponible)
                 .entrepot(zone.getEntrepot() != null
                         ? EntrepotInfoDTO.builder()
                                 .id(zone.getEntrepot().getId())

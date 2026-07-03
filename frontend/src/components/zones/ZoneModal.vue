@@ -36,7 +36,7 @@ const form = ref({
   type:             '',
   description:      '',
   entrepotId:       null,
-  capaciteUtilisee: '',
+  capacite:         '',
 })
 
 const entrepots = ref([])
@@ -62,22 +62,22 @@ watch(() => props.visible, async (val) => {
     try {
       const data = await zoneService.findById(props.zoneId)
       form.value = {
-        nom:              data.nom,
-        type:             data.type,
-        description:      data.description || '',
-        entrepotId:       data.entrepot?.id ?? null,
-        capaciteUtilisee: data.capaciteUtilisee ?? '',
+        nom:         data.nom,
+        type:        data.type,
+        description: data.description || '',
+        entrepotId:  data.entrepot?.id ?? null,
+        capacite:    data.capacite ?? '',
       }
     } catch {
       erreurApi.value = 'Impossible de charger cette zone.'
     }
   } else {
     form.value = {
-      nom:              '',
-      type:             '',
-      description:      '',
-      entrepotId:       props.entrepotId ? Number(props.entrepotId) : null,
-      capaciteUtilisee: '',
+      nom:         '',
+      type:        '',
+      description: '',
+      entrepotId:  props.entrepotId ? Number(props.entrepotId) : null,
+      capacite:    '',
     }
   }
 })
@@ -97,15 +97,16 @@ const valider = () => {
   if (!form.value.entrepotId)
     erreurs.value.entrepotId = "L'entrepôt est obligatoire."
 
-  const utilise = parseFloat(form.value.capaciteUtilisee)
+  const capacite = parseFloat(form.value.capacite)
 
-  if (form.value.capaciteUtilisee !== '' && (isNaN(utilise) || utilise < 0))
-    erreurs.value.capaciteUtilisee = 'La capacité utilisée ne peut pas être négative.'
+  if (!form.value.capacite || isNaN(capacite) || capacite <= 0)
+    erreurs.value.capacite = 'La capacité est obligatoire et doit être supérieure à 0.'
 
-  if (!isNaN(utilise) && entrepotSelectionne.value?.capaciteTotale != null) {
+  // Vérification capacité disponible de l'entrepôt
+  if (!isNaN(capacite) && entrepotSelectionne.value) {
     const disponible = (entrepotSelectionne.value.capaciteTotale ?? 0) - (entrepotSelectionne.value.capaciteUtilisee ?? 0)
-    if (utilise > disponible)
-      erreurs.value.capaciteUtilisee = `Dépasse la capacité disponible de l'entrepôt (${disponible} m³ restants).`
+    if (capacite > disponible)
+      erreurs.value.capacite = `Dépasse la capacité disponible de l'entrepôt (${disponible} m³ restants).`
   }
 
   return Object.keys(erreurs.value).length === 0
@@ -121,11 +122,11 @@ const soumettre = async () => {
 
   try {
     const payload = {
-      nom:              form.value.nom.trim(),
-      type:             form.value.type,
-      description:      form.value.description?.trim() || null,
-      entrepotId:       form.value.entrepotId,
-      capaciteUtilisee: form.value.capaciteUtilisee !== '' ? parseFloat(form.value.capaciteUtilisee) : null,
+      nom:         form.value.nom.trim(),
+      type:        form.value.type,
+      description: form.value.description?.trim() || null,
+      entrepotId:  form.value.entrepotId,
+      capacite:    parseFloat(form.value.capacite),
     }
 
     if (isEditing.value) {
@@ -200,13 +201,6 @@ const soumettre = async () => {
               <p v-if="entrepots.length === 0" class="text-xs text-orange-500 mt-1">
                 Aucun entrepôt actif disponible.
               </p>
-              <p v-if="entrepotSelectionne" class="text-xs text-gray-500 mt-1">
-                Capacité disponible :
-                <span class="font-medium text-gray-700">
-                  {{ (entrepotSelectionne.capaciteTotale ?? 0) - (entrepotSelectionne.capaciteUtilisee ?? 0) }} m³
-                </span>
-                sur {{ entrepotSelectionne.capaciteTotale ?? '?' }} m³ au total
-              </p>
             </div>
 
             <!-- Nom -->
@@ -237,21 +231,27 @@ const soumettre = async () => {
               ></textarea>
             </div>
 
-            <!-- Capacités -->
+            <!-- Capacité -->
             <div class="border-t border-gray-100 pt-4">
               <p class="text-sm font-medium text-gray-700 mb-3">
-                Capacité utilisée
-                <span class="text-xs font-normal text-gray-400 ml-1">(optionnel)</span>
+                Capacité allouée <span class="text-red-500">*</span>
               </p>
               <div>
-                <label class="form-label">Capacité utilisée (m³)</label>
+                <label class="form-label">Capacité (m³)</label>
                 <input
-                  v-model="form.capaciteUtilisee"
-                  type="number" min="0" step="0.1"
-                  placeholder="Ex : 120"
-                  :class="['form-input', erreurs.capaciteUtilisee ? 'border-red-400 focus:ring-red-400' : '']"
+                  v-model="form.capacite"
+                  type="number" min="0.1" step="0.1"
+                  placeholder="Ex : 500"
+                  :class="['form-input', erreurs.capacite ? 'border-red-400 focus:ring-red-400' : '']"
                 />
-                <p v-if="erreurs.capaciteUtilisee" class="form-error">{{ erreurs.capaciteUtilisee }}</p>
+                <p v-if="erreurs.capacite" class="form-error">{{ erreurs.capacite }}</p>
+                <p v-if="entrepotSelectionne" class="text-xs text-gray-500 mt-1">
+                  Disponible :
+                  <span class="font-medium text-gray-700">
+                    {{ (entrepotSelectionne.capaciteTotale ?? 0) - (entrepotSelectionne.capaciteUtilisee ?? 0) }} m³
+                  </span>
+                  sur {{ entrepotSelectionne.capaciteTotale ?? '?' }} m³ au total
+                </p>
               </div>
             </div>
 

@@ -161,7 +161,7 @@ const reinitialiserFiltres = () => {
                 <th class="table-header">Zone</th>
                 <th class="table-header">Entrepôt</th>
                 <th class="table-header">Type</th>
-                <th class="table-header">Occupation</th>
+                <th class="table-header">Capacité</th>
                 <th class="table-header">Statut</th>
                 <th class="table-header text-right">Actions</th>
               </tr>

@@ -13,8 +13,7 @@
 //   @toggle   → l'utilisateur veut activer/désactiver cette zone
 // ============================================================
 
-defineProps({
-  /** L'objet zone complet retourné par l'API */
+const props = defineProps({
   zone: {
     type: Object,
     required: true,
@@ -24,13 +23,8 @@ defineProps({
     default: false,
   },
 })
-
+import { } from 'vue'
 const emit = defineEmits(['modifier', 'toggle'])
-
-const zoneTaux = computed(() => {
-  if (!zone.entrepot?.capaciteTotale || zone.entrepot.capaciteTotale <= 0) return 0
-  return Math.min(((zone.capaciteUtilisee || 0) / zone.entrepot.capaciteTotale) * 100, 100)
-})
 
 // -------------------------------------------------------
 // CONSTANTES D'AFFICHAGE
@@ -66,18 +60,6 @@ const TYPE_COLORS = {
 function formatCapacite(val) {
   return val != null ? val.toLocaleString('fr-FR') + ' m³' : '—'
 }
-
-function getCouleurBarre(taux) {
-  if (taux >= 85) return 'bg-red-500'
-  if (taux >= 60) return 'bg-orange-400'
-  return 'bg-green-500'
-}
-
-function getCouleurTaux(taux) {
-  if (taux >= 85) return 'text-red-600'
-  if (taux >= 60) return 'text-orange-500'
-  return 'text-gray-600'
-}
 </script>
 
 <template>
@@ -108,22 +90,9 @@ function getCouleurTaux(taux) {
       </span>
     </td>
 
-    <!-- Capacité utilisée -->
-    <td class="table-cell w-44">
-      <div class="flex items-center gap-2">
-        <div class="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            :class="['h-1.5 rounded-full transition-all duration-500', getCouleurBarre(zoneTaux)]"
-            :style="{ width: Math.min(zoneTaux, 100) + '%' }"
-          ></div>
-        </div>
-        <span :class="['text-xs font-semibold w-10 text-right', getCouleurTaux(zoneTaux)]">
-          {{ Math.round(zoneTaux) }} %
-        </span>
-      </div>
-      <p class="text-xs text-gray-400 mt-0.5">
-        {{ formatCapacite(zone.capaciteUtilisee) }}
-      </p>
+    <!-- Capacité -->
+    <td class="table-cell">
+      <span class="text-sm text-gray-700 font-medium">{{ formatCapacite(zone.capacite) }}</span>
     </td>
 
     <!-- Badge statut -->
@@ -153,7 +122,7 @@ function getCouleurTaux(taux) {
         <!-- Activer / Désactiver -->
         <button
           v-if="peutModifier"
-          @click="emit('toggle', zone)""
+          @click="emit('toggle', zone)"
           :class="[
             'p-1.5 rounded-lg transition-colors',
             zone.actif

@@ -46,10 +46,11 @@ public class ZoneRequestDTO {
     private Long entrepotId;
 
     /**
-     * Capacité actuellement utilisée dans cette zone en m³.
-     * Optionnelle, 0 par défaut.
-     * Doit respecter la capacité disponible de l'entrepôt parent.
+     * Capacité allouée à cette zone en m³. Obligatoire.
+     * La somme des capacités de toutes les zones ne doit pas dépasser
+     * la capacité totale de l'entrepôt parent.
      */
-    @DecimalMin(value = "0.0", message = "La capacité utilisée ne peut pas être négative")
-    private Double capaciteUtilisee;
+    @NotNull(message = "La capacité de la zone est obligatoire")
+    @DecimalMin(value = "0.1", message = "La capacité doit être supérieure à 0")
+    private Double capacite;
 }

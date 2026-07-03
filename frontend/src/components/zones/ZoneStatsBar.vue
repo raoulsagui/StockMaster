@@ -6,13 +6,9 @@ const props = defineProps({
   totalAbsolu: { type: Number, default: 0 },
 })
 
-const totalZones   = computed(() => props.zones.length)
-const totalActives = computed(() => props.zones.filter(z => z.actif).length)
+const totalZones    = computed(() => props.zones.length)
+const totalActives  = computed(() => props.zones.filter(z => z.actif).length)
 const totalInactives = computed(() => totalZones.value - totalActives.value)
-
-const capaciteUtiliseeTotale = computed(() => {
-  return props.zones.reduce((acc, z) => acc + (parseFloat(z.capaciteUtilisee) || 0), 0)
-})
 
 const kpis = computed(() => [
   {
@@ -35,20 +31,11 @@ const kpis = computed(() => [
     valueColor: 'text-green-600',
     icon:       'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
   },
-  {
-    label:      'Capacité utilisée totale',
-    value:      capaciteUtiliseeTotale.value.toLocaleString('fr-FR') + ' m³',
-    sub:        'Somme des capacités occupées par zone',
-    color:      'bg-indigo-600',
-    subColor:   'text-gray-400',
-    valueColor: 'text-indigo-600',
-    icon:       'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4',
-  },
 ])
 </script>
 
 <template>
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
     <div
       v-for="kpi in kpis"
       :key="kpi.label"

@@ -175,7 +175,7 @@ public class EntrepotService {
     @Transactional
     public void recalculerCapaciteUtilisee(Long entrepotId) {
         Entrepot entrepot = findEntrepotOrThrow(entrepotId);
-        Double somme = zoneRepository.sumCapaciteUtiliseeByEntrepotId(entrepotId);
+        Double somme = zoneRepository.sumCapaciteByEntrepotId(entrepotId);
         entrepot.setCapaciteUtilisee(somme != null ? somme : 0.0);
         entrepotRepository.save(entrepot);
     }
