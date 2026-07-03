@@ -14,8 +14,9 @@ import java.time.LocalDateTime;
  *   - STOCKAGE   : zone de conservation des produits
  *   - EXPEDITION : zone de préparation et chargement des commandes sortantes
  *
- * Chaque zone a sa propre capacité et son taux d'occupation.
- * La somme des capacités des zones ne doit pas dépasser la capacité de l'entrepôt.
+ * Chaque zone ne tracke que sa capacité utilisée.
+ * La somme des capacités utilisées de toutes les zones ne doit pas dépasser
+ * la capacité totale de l'entrepôt parent.
  */
 @Entity
 @Table(name = "zones")
@@ -65,17 +66,12 @@ public class Zone {
     private boolean actif = true;
 
     /**
-     * Capacité totale de la zone en mètres cubes (m³).
-     * Représente la surface physique disponible.
-     * Null = capacité non définie (zone sans limite mesurée).
-     */
-    private Double capaciteTotale;
-
-    /**
-     * Capacité actuellement utilisée en mètres cubes (m³).
+     * Capacité actuellement utilisée dans cette zone en mètres cubes (m³).
+     * Correspond à la place occupée par le stock de cette zone.
      * Mise à jour lors des mouvements de stock.
      */
     @Builder.Default
+    @Column(nullable = false)
     private Double capaciteUtilisee = 0.0;
 
     /**
@@ -107,23 +103,4 @@ public class Zone {
     // MÉTHODES MÉTIER
     // -------------------------------------------------------
 
-    /**
-     * Taux d'occupation de la zone en pourcentage (0–100).
-     * Retourne 0 si la capacité totale n'est pas définie ou est nulle.
-     */
-    public double getTauxOccupation() {
-        if (capaciteTotale == null || capaciteTotale == 0) return 0.0;
-        double utilise = capaciteUtilisee != null ? capaciteUtilisee : 0.0;
-        return Math.min((utilise / capaciteTotale) * 100.0, 100.0);
-    }
-
-    /**
-     * Capacité disponible restante en m³.
-     * Retourne null si la capacité totale n'est pas définie.
-     */
-    public Double getCapaciteDisponible() {
-        if (capaciteTotale == null) return null;
-        double utilise = capaciteUtilisee != null ? capaciteUtilisee : 0.0;
-        return Math.max(capaciteTotale - utilise, 0.0);
-    }
 }

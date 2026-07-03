@@ -83,15 +83,16 @@ public interface ZoneRepository extends JpaRepository<Zone, Long> {
     List<Zone> findByEntrepotIdAndType(Long entrepotId, TypeZone type);
 
     /**
-     * Somme des capacités totales de toutes les zones d'un entrepôt.
-     * Utilisé pour vérifier que la nouvelle zone ne dépasse pas la capacité de l'entrepôt.
+     * Somme des capacités utilisées de toutes les zones d'un entrepôt.
+     * Utilisé pour recalculer la capacité utilisée de l'entrepôt parent.
      */
-    @Query("SELECT COALESCE(SUM(z.capaciteTotale), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId AND z.capaciteTotale IS NOT NULL")
-    Double sumCapaciteTotaleByEntrepotId(@Param("entrepotId") Long entrepotId);
+    @Query("SELECT COALESCE(SUM(z.capaciteUtilisee), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId")
+    Double sumCapaciteUtiliseeByEntrepotId(@Param("entrepotId") Long entrepotId);
 
     /**
-     * Somme des capacités totales en excluant une zone (pour la modification).
+     * Somme des capacités utilisées de toutes les zones d'un entrepôt en excluant une zone donnée.
+     * Utilisé lors de la modification d'une zone pour vérifier la capacité disponible.
      */
-    @Query("SELECT COALESCE(SUM(z.capaciteTotale), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId AND z.id <> :excludeId AND z.capaciteTotale IS NOT NULL")
-    Double sumCapaciteTotaleByEntrepotIdExcluding(@Param("entrepotId") Long entrepotId, @Param("excludeId") Long excludeId);
+    @Query("SELECT COALESCE(SUM(z.capaciteUtilisee), 0) FROM Zone z WHERE z.entrepot.id = :entrepotId AND z.id <> :excludeId")
+    Double sumCapaciteUtiliseeByEntrepotIdExcluding(@Param("entrepotId") Long entrepotId, @Param("excludeId") Long excludeId);
 }

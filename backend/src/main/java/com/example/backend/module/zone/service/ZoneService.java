@@ -2,6 +2,7 @@ package com.example.backend.module.zone.service;
 
 import com.example.backend.module.entrepot.entity.Entrepot;
 import com.example.backend.module.entrepot.repository.EntrepotRepository;
+import com.example.backend.module.entrepot.service.EntrepotService;
 import com.example.backend.module.zone.dto.ZoneRequestDTO;
 import com.example.backend.module.zone.dto.ZoneResponseDTO;
 import com.example.backend.module.zone.entity.Zone;
@@ -20,8 +21,9 @@ import java.util.List;
  *   - Vérification que la zone appartient à un entrepôt actif
  *   - Unicité du nom au sein d'un même entrepôt
  *
- * Les capacités (totale/utilisée) sont portées par l'entrepôt.
- * La mise à jour lors des mouvements de stock sera gérée dans le module mouvements.
+ * La zone ne tracke que sa capacité utilisée.
+ * La somme des capacités utilisées des zones ne doit pas dépasser
+ * la capacité totale de l'entrepôt parent.
  */
 @Service
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class ZoneService {
 
     private final ZoneRepository zoneRepository;
     private final EntrepotRepository entrepotRepository;
+    private final EntrepotService entrepotService;
 
     /**
      * Récupère toutes les zones du système.
@@ -98,21 +101,13 @@ public class ZoneService {
             );
         }
 
-        // Règle 3 : cohérence capaciteUtilisee <= capaciteTotale (si les deux sont fournis)
-        if (dto.getCapaciteTotale() != null && dto.getCapaciteUtilisee() != null
-                && dto.getCapaciteUtilisee() > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée ne peut pas dépasser la capacité totale"
-            );
-        }
-
-        // Règle 4 : la capacité de la zone ne dépasse pas la capacité disponible de l'entrepôt
-        if (dto.getCapaciteTotale() != null) {
-            double dejaAlloue = zoneRepository.sumCapaciteTotaleByEntrepotId(dto.getEntrepotId());
+        // Règle 3 : la capacité utilisée de la zone ne dépasse pas la capacité disponible de l'entrepôt
+        if (dto.getCapaciteUtilisee() != null) {
+            double dejaAlloue = zoneRepository.sumCapaciteUtiliseeByEntrepotId(dto.getEntrepotId());
             double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
-            if (dto.getCapaciteTotale() > disponible) {
+            if (dto.getCapaciteUtilisee() > disponible) {
                 throw new RuntimeException(
-                    "La capacité de la zone (" + dto.getCapaciteTotale() + " m³) dépasse "
+                    "La capacité utilisée de la zone (" + dto.getCapaciteUtilisee() + " m³) dépasse "
                     + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
                     + entrepot.getCapaciteTotale() + " m³ au total)"
                 );
@@ -124,12 +119,12 @@ public class ZoneService {
                 .type(dto.getType())
                 .description(dto.getDescription())
                 .entrepot(entrepot)
-                .capaciteTotale(dto.getCapaciteTotale())
                 .capaciteUtilisee(dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0)
                 .actif(true)
                 .build();
 
         Zone saved = zoneRepository.save(zone);
+        entrepotService.recalculerCapaciteUtilisee(entrepot.getId());
         return ZoneResponseDTO.fromEntity(saved);
     }
 
@@ -166,37 +161,35 @@ public class ZoneService {
             );
         }
 
-        // Règle 4 : cohérence capaciteUtilisee <= capaciteTotale
-        if (dto.getCapaciteTotale() != null && dto.getCapaciteUtilisee() != null
-                && dto.getCapaciteUtilisee() > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée ne peut pas dépasser la capacité totale"
-            );
-        }
-
-        // Règle 5 : la capacité de la zone ne dépasse pas la capacité disponible de l'entrepôt
-        if (dto.getCapaciteTotale() != null) {
-            double dejaAlloue = zoneRepository.sumCapaciteTotaleByEntrepotIdExcluding(dto.getEntrepotId(), id);
+        // Règle 4 : la capacité utilisée de la zone ne dépasse pas la capacité disponible de l'entrepôt
+        if (dto.getCapaciteUtilisee() != null) {
+            double dejaAlloue = zoneRepository.sumCapaciteUtiliseeByEntrepotIdExcluding(dto.getEntrepotId(), id);
             double disponible = entrepot.getCapaciteTotale() - dejaAlloue;
-            if (dto.getCapaciteTotale() > disponible) {
+            if (dto.getCapaciteUtilisee() > disponible) {
                 throw new RuntimeException(
-                    "La capacité de la zone (" + dto.getCapaciteTotale() + " m³) dépasse "
+                    "La capacité utilisée de la zone (" + dto.getCapaciteUtilisee() + " m³) dépasse "
                     + "la capacité disponible de l'entrepôt (" + disponible + " m³ restants sur "
                     + entrepot.getCapaciteTotale() + " m³ au total)"
                 );
             }
         }
 
+        Long ancienEntrepotId = zone.getEntrepot().getId();
+        boolean changementEntrepot = !ancienEntrepotId.equals(dto.getEntrepotId());
+
         zone.setNom(dto.getNom());
         zone.setType(dto.getType());
         zone.setDescription(dto.getDescription());
         zone.setEntrepot(entrepot);
-        zone.setCapaciteTotale(dto.getCapaciteTotale());
         if (dto.getCapaciteUtilisee() != null) {
             zone.setCapaciteUtilisee(dto.getCapaciteUtilisee());
         }
 
         Zone saved = zoneRepository.save(zone);
+        entrepotService.recalculerCapaciteUtilisee(ancienEntrepotId);
+        if (changementEntrepot) {
+            entrepotService.recalculerCapaciteUtilisee(entrepot.getId());
+        }
         return ZoneResponseDTO.fromEntity(saved);
     }
 

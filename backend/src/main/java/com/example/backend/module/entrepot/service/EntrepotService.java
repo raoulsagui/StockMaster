@@ -48,21 +48,13 @@ public class EntrepotService {
             throw new RuntimeException("Un entrepôt avec ce nom existe déjà");
         }
 
-        double utilise = dto.getCapaciteUtilisee() != null ? dto.getCapaciteUtilisee() : 0.0;
-        if (utilise > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m³) ne peut pas dépasser "
-                + "la capacité totale (" + dto.getCapaciteTotale() + " m³)"
-            );
-        }
-
         Utilisateur responsable = resolveResponsable(dto.getResponsableId());
 
         Entrepot entrepot = Entrepot.builder()
                 .nom(dto.getNom())
                 .adresse(dto.getAdresse())
                 .capaciteTotale(dto.getCapaciteTotale())
-                .capaciteUtilisee(utilise)
+                .capaciteUtilisee(0.0)
                 .responsable(responsable)
                 .actif(true)
                 .build();
@@ -80,23 +72,11 @@ public class EntrepotService {
             throw new RuntimeException("Un autre entrepôt porte déjà ce nom");
         }
 
-        double utilise = dto.getCapaciteUtilisee() != null
-                ? dto.getCapaciteUtilisee()
-                : entrepot.getCapaciteUtilisee();
-
-        if (utilise > dto.getCapaciteTotale()) {
-            throw new RuntimeException(
-                "La capacité utilisée (" + utilise + " m³) ne peut pas dépasser "
-                + "la nouvelle capacité totale (" + dto.getCapaciteTotale() + " m³)"
-            );
-        }
-
         Utilisateur responsable = resolveResponsable(dto.getResponsableId());
 
         entrepot.setNom(dto.getNom());
         entrepot.setAdresse(dto.getAdresse());
         entrepot.setCapaciteTotale(dto.getCapaciteTotale());
-        entrepot.setCapaciteUtilisee(utilise);
         entrepot.setResponsable(responsable);
 
         Entrepot saved = entrepotRepository.save(entrepot);
@@ -190,5 +170,13 @@ public class EntrepotService {
                 .orElseThrow(() -> new RuntimeException(
                     "Responsable introuvable : id=" + responsableId
                 ));
+    }
+
+    @Transactional
+    public void recalculerCapaciteUtilisee(Long entrepotId) {
+        Entrepot entrepot = findEntrepotOrThrow(entrepotId);
+        Double somme = zoneRepository.sumCapaciteUtiliseeByEntrepotId(entrepotId);
+        entrepot.setCapaciteUtilisee(somme != null ? somme : 0.0);
+        entrepotRepository.save(entrepot);
     }
 }

@@ -12,7 +12,7 @@ import lombok.Data;
  *   PUT  /api/zones/{id}       → modification d'une zone
  *
  * Le champ "actif" est géré séparément via PATCH /zones/{id}/statut.
- * Les capacités (totale/utilisée) sont portées par l'entrepôt, pas par la zone.
+ * La zone ne tracke que sa capacité utilisée (capaciteUtilisee).
  */
 @Data
 public class ZoneRequestDTO {
@@ -46,15 +46,9 @@ public class ZoneRequestDTO {
     private Long entrepotId;
 
     /**
-     * Capacité totale de la zone en m³.
-     * Optionnelle : une zone peut ne pas avoir de capacité mesurée.
-     */
-    @DecimalMin(value = "0.1", message = "La capacité totale doit être supérieure à 0")
-    private Double capaciteTotale;
-
-    /**
-     * Capacité actuellement utilisée en m³.
+     * Capacité actuellement utilisée dans cette zone en m³.
      * Optionnelle, 0 par défaut.
+     * Doit respecter la capacité disponible de l'entrepôt parent.
      */
     @DecimalMin(value = "0.0", message = "La capacité utilisée ne peut pas être négative")
     private Double capaciteUtilisee;

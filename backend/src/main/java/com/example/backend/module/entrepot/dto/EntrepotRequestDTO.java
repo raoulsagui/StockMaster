@@ -28,14 +28,6 @@ public class EntrepotRequestDTO {
     private Double capaciteTotale;
 
     /**
-     * Capacité actuellement utilisée.
-     * Optionnel à la création (défaut = 0).
-     * Ne peut pas dépasser la capacité totale (vérifié côté service).
-     */
-    @DecimalMin(value = "0.0", message = "La capacité utilisée ne peut pas être négative")
-    private Double capaciteUtilisee = 0.0;
-
-    /**
      * ID du responsable (optionnel).
      */
     private Long responsableId;
